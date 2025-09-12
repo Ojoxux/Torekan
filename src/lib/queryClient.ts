@@ -1,21 +1,30 @@
 import { QueryClient } from '@tanstack/react-query';
-import { MMKV } from 'react-native-mmkv';
+import * as SecureStore from 'expo-secure-store';
 
-const storage = new MMKV({
-  id: 'torekan-cache',
-});
-
-// MMKVストレージアダプター
+// SecureStoreストレージアダプター
 const clientStorage = {
-  setItem: (key: string, value: string) => {
-    storage.set(key, value);
+  setItem: async (key: string, value: string) => {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (error) {
+      console.error('Failed to save to cache:', error);
+    }
   },
-  getItem: (key: string) => {
-    const value = storage.getString(key);
-    return value === undefined ? null : value;
+  getItem: async (key: string) => {
+    try {
+      const value = await SecureStore.getItemAsync(key);
+      return value;
+    } catch (error) {
+      console.error('Failed to read from cache:', error);
+      return null;
+    }
   },
-  removeItem: (key: string) => {
-    storage.delete(key);
+  removeItem: async (key: string) => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (error) {
+      console.error('Failed to remove from cache:', error);
+    }
   },
 };
 
@@ -47,14 +56,14 @@ export const persistOptions = {
   persister: {
     persistClient: async (client: unknown) => {
       const data = JSON.stringify(client);
-      clientStorage.setItem('tanstack-query-cache', data);
+      await clientStorage.setItem('tanstack-query-cache', data);
     },
     restoreClient: async () => {
-      const data = clientStorage.getItem('tanstack-query-cache');
+      const data = await clientStorage.getItem('tanstack-query-cache');
       return data ? JSON.parse(data) : undefined;
     },
     removeClient: async () => {
-      clientStorage.removeItem('tanstack-query-cache');
+      await clientStorage.removeItem('tanstack-query-cache');
     },
   },
   maxAge: 1000 * 60 * 60 * 24, // 24時間
