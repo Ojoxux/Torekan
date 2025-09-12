@@ -1,49 +1,72 @@
-// 取引の種別
-export type TradeType = '交換' | '譲渡' | '買取';
+export type TradeType = 'mail' | 'direct';
+export type TradeStatus = 'new' | 'in_progress' | 'waiting' | 'completed' | 'canceled';
+export type SortOrder = 'created_at' | 'updated_at' | 'event_date' | 'status';
 
-// 取引のステータス
-export type TradeStatus = '連絡待ち' | '住所交換済み' | '発送待ち' | '発送済み' | '完了';
-
-// 取引データ
 export interface Trade {
   id: string;
   user_id: string;
-  title: string;
-  partner_name?: string;
-  item_memo?: string;
-  status: TradeStatus;
+  my_character: string;
+  partner_character: string;
   trade_type: TradeType;
-  shipping_deadline?: string;
+  status: TradeStatus;
+  event_date?: string;
+  notes?: string;
   is_archived: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// ToDoデータ
 export interface Todo {
   id: string;
   trade_id: string;
-  title: string;
-  is_done: boolean;
-  sort_order: number;
-  created_at: string;
-}
-
-// 設定データ
-export interface Settings {
   user_id: string;
-  auto_archive_on_complete: boolean;
-  allow_cloud_backup: boolean;
-  is_passcode_lock_enabled: boolean;
+  content: string;
+  is_completed: boolean;
+  display_order: number;
+  created_at: string;
   updated_at: string;
 }
 
-// フォーム用の型（IDなし）
-export type TradeFormData = Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
-export type TodoFormData = Omit<Todo, 'id' | 'trade_id' | 'created_at'>;
+export interface Settings {
+  id: string;
+  user_id: string;
+  auto_archive: boolean;
+  default_sort_order: SortOrder;
+  created_at: string;
+  updated_at: string;
+}
 
-// Supabaseのレスポンス型
-export interface SupabaseResponse<T> {
-  data: T | null;
-  error: Error | null;
+export interface User {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
+export interface CreateTradeInput {
+  my_character: string;
+  partner_character: string;
+  trade_type: TradeType;
+  status?: TradeStatus;
+  event_date?: string;
+  notes?: string;
+}
+
+export interface UpdateTradeInput {
+  my_character?: string;
+  partner_character?: string;
+  trade_type?: TradeType;
+  status?: TradeStatus;
+  event_date?: string;
+  notes?: string;
+  is_archived?: boolean;
+}
+
+export interface CreateTodoInput {
+  content: string;
+  display_order: number;
+}
+
+export interface UpdateSettingsInput {
+  auto_archive?: boolean;
+  default_sort_order?: SortOrder;
 }
