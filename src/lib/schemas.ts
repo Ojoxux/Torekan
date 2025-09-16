@@ -21,6 +21,24 @@ export const tradeSchema = v.object({
   notes: v.optional(
     v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
   ),
+  category_id: v.optional(v.nullable(v.string())),
+});
+
+// カテゴリのバリデーションスキーマ
+export const categorySchema = v.object({
+  name: v.pipe(
+    v.string(),
+    v.minLength(1, 'カテゴリ名は必須です'),
+    v.maxLength(32, 'カテゴリ名は32文字以内で入力してください')
+  ),
+  color: v.optional(
+    v.pipe(
+      v.string(),
+      v.regex(/^#[0-9A-Fa-f]{6}$/, '有効なカラーコードを入力してください')
+    ),
+    '#6B7280'
+  ),
+  sort_order: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 0),
 });
 
 // ToDoのバリデーションスキーマ
@@ -52,3 +70,11 @@ export const updateTradeSchema = v.partial(tradeSchema);
 export type UpdateTradeFormInput = v.InferInput<typeof updateTradeSchema>;
 export type TodoFormInput = v.InferInput<typeof todoSchema>;
 export type SettingsFormInput = v.InferInput<typeof settingsSchema>;
+
+// カテゴリ作成用のスキーマ
+export const createCategorySchema = categorySchema;
+export type CreateCategoryFormInput = v.InferInput<typeof createCategorySchema>;
+
+// カテゴリ更新用のスキーマ
+export const updateCategorySchema = v.partial(categorySchema);
+export type UpdateCategoryFormInput = v.InferInput<typeof updateCategorySchema>;

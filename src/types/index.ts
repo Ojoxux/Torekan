@@ -33,6 +33,17 @@ export interface Trade {
   item_id?: string;
   partner_id?: string;
   notes?: string;
+  category_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoodsCategory {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -71,6 +82,7 @@ export interface CreateTradeInput {
   item_id?: string;
   partner_id?: string;
   notes?: string;
+  category_id?: string;
 }
 
 export interface UpdateTradeInput {
@@ -82,6 +94,19 @@ export interface UpdateTradeInput {
   item_id?: string;
   partner_id?: string;
   notes?: string;
+  category_id?: string;
+}
+
+export interface CreateCategoryInput {
+  name: string;
+  color?: string;
+  sort_order?: number;
+}
+
+export interface UpdateCategoryInput {
+  name?: string;
+  color?: string;
+  sort_order?: number;
 }
 
 export interface CreateTodoInput {
