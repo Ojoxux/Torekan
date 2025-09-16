@@ -1,29 +1,44 @@
-import { QueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+/**
+ * 
+ * SecureStore (src/lib/supabase.ts):
+ * - 認証トークン、セッション情報
+ * - APIキー、機密データ
+ * - 暗号化されて保存、容量制限: 2048バイト
+ * 
+ * AsyncStorage (このファイル):
+ * - APIレスポンスキャッシュ
+ * - ユーザー設定、アプリ設定
+ * - 大きなデータ、非機密データ
+ * - 平文で保存、容量制限なし
+ * 
+ */
 
-// SecureStoreストレージアダプター
-const clientStorage = {
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { QueryClient } from '@tanstack/react-query';
+
+// AsyncStorageアダプター（非機密データ用）
+const asyncStorageAdapter = {
   setItem: async (key: string, value: string) => {
     try {
-      await SecureStore.setItemAsync(key, value);
+      await AsyncStorage.setItem(key, value);
     } catch (error) {
-      console.error('Failed to save to cache:', error);
+      console.error('Failed to save to AsyncStorage:', error);
     }
   },
   getItem: async (key: string) => {
     try {
-      const value = await SecureStore.getItemAsync(key);
+      const value = await AsyncStorage.getItem(key);
       return value;
     } catch (error) {
-      console.error('Failed to read from cache:', error);
+      console.error('Failed to read from AsyncStorage:', error);
       return null;
     }
   },
   removeItem: async (key: string) => {
     try {
-      await SecureStore.deleteItemAsync(key);
+      await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error('Failed to remove from cache:', error);
+      console.error('Failed to remove from AsyncStorage:', error);
     }
   },
 };
@@ -51,19 +66,20 @@ export const queryClient = new QueryClient({
   },
 });
 
-// キャッシュの永続化設定
+// キャッシュの永続化設定（AsyncStorage使用）
+// 非機密データ（APIレスポンスキャッシュなど）をAsyncStorageに保存
 export const persistOptions = {
   persister: {
     persistClient: async (client: unknown) => {
       const data = JSON.stringify(client);
-      await clientStorage.setItem('tanstack-query-cache', data);
+      await asyncStorageAdapter.setItem('tanstack-query-cache', data);
     },
     restoreClient: async () => {
-      const data = await clientStorage.getItem('tanstack-query-cache');
+      const data = await asyncStorageAdapter.getItem('tanstack-query-cache');
       return data ? JSON.parse(data) : undefined;
     },
     removeClient: async () => {
-      await clientStorage.removeItem('tanstack-query-cache');
+      await asyncStorageAdapter.removeItem('tanstack-query-cache');
     },
   },
   maxAge: 1000 * 60 * 60 * 24, // 24時間
