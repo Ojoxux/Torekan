@@ -1,17 +1,17 @@
 import { useArchiveTrade, useDeleteTrade, useTrade, useUpdateTrade } from '@/hooks/useTrades';
-import { TradeStatus } from '@/types';
+import { TradeStatus, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+   ActivityIndicator,
+   Alert,
+   Modal,
+   SafeAreaView,
+   ScrollView,
+   Text,
+   TouchableOpacity,
+   View,
 } from 'react-native';
 
 /*
@@ -20,7 +20,7 @@ import {
 export default function TradeDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [statusDropdownVisible, setStatusDropdownVisible] = useState(false);
   const [actionModalVisible, setActionModalVisible] = useState(false);
 
   const { data: trade, isLoading } = useTrade(id || '');
@@ -29,13 +29,10 @@ export default function TradeDetailScreen() {
   const archiveTrade = useArchiveTrade();
 
   const statusOptions: { value: TradeStatus; label: string; color: string }[] = [
-    { value: 'planning', label: '計画中', color: '#3B82F6' },
-    { value: 'waiting_payment', label: '入金待ち', color: '#F59E0B' },
-    { value: 'payment_sent', label: '入金済み', color: '#8B5CF6' },
-    { value: 'payment_received', label: '入金確認済み', color: '#10B981' },
-    { value: 'shipping_sent', label: '発送済み', color: '#06B6D4' },
-    { value: 'shipping_received', label: '受取済み', color: '#EC4899' },
-    { value: 'completed', label: '完了', color: '#6B7280' },
+    { value: TradeStatus.PLANNED, label: '計画中', color: '#3B82F6' },
+    { value: TradeStatus.SHIPPED, label: '発送済み', color: '#06B6D4' },
+    { value: TradeStatus.COMPLETED, label: '完了', color: '#6B7280' },
+    { value: TradeStatus.CANCELED, label: 'キャンセル', color: '#EF4444' },
   ];
 
   const handleStatusChange = async (newStatus: TradeStatus) => {
@@ -44,7 +41,7 @@ export default function TradeDetailScreen() {
         id: id || '',
         trade: { status: newStatus },
       });
-      setStatusModalVisible(false);
+      setStatusDropdownVisible(false);
     } catch (error) {
       console.error('Failed to update status:', error);
       Alert.alert('エラー', 'ステータスの更新に失敗しました。');
@@ -124,61 +121,77 @@ export default function TradeDetailScreen() {
       <ScrollView className='flex-1 p-4'>
         <View className='bg-white rounded-xl p-4 mb-4'>
           <View className='flex-row justify-between items-start mb-3'>
-            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>{trade.title}</Text>
+            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>{trade.item_name}</Text>
             <View className='bg-blue-50 px-3 py-1 rounded-full'>
               <Text className='text-xs font-medium text-blue-600'>
-                {trade.type === 'sell' ? '譲渡' : '求'}
+                {trade.type === TradeType.EXCHANGE && '交換'}
+                {trade.type === TradeType.TRANSFER && '譲渡'}
+                {trade.type === TradeType.PURCHASE && '買取'}
+                {trade.type === TradeType.SALE && '売却'}
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity
-            className='flex-row items-center justify-between'
-            onPress={() => setStatusModalVisible(true)}
-          >
-            <View
-              className='px-3 py-1.5 rounded-full'
-              style={{ backgroundColor: currentStatus?.color }}
+          <View>
+            <TouchableOpacity
+              className='flex-row items-center justify-between'
+              onPress={() => setStatusDropdownVisible(!statusDropdownVisible)}
             >
-              <Text className='text-sm font-medium text-white'>{currentStatus?.label}</Text>
-            </View>
-            <Ionicons name='chevron-down' size={16} color='#6B7280' />
-          </TouchableOpacity>
+              <View
+                className='px-3 py-1.5 rounded-full'
+                style={{ backgroundColor: currentStatus?.color }}
+              >
+                <Text className='text-sm font-medium text-white'>{currentStatus?.label}</Text>
+              </View>
+              <Ionicons 
+                name={statusDropdownVisible ? 'chevron-up' : 'chevron-down'} 
+                size={16} 
+                color='#6B7280' 
+              />
+            </TouchableOpacity>
+            
+            {statusDropdownVisible && (
+              <View className='absolute top-10 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
+                {statusOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    className={`flex-row items-center justify-between py-3 px-3 ${
+                      option.value !== statusOptions[statusOptions.length - 1].value ? 'border-b border-gray-100' : ''
+                    } ${
+                      trade.status === option.value ? 'bg-blue-50' : ''
+                    }`}
+                    onPress={() => handleStatusChange(option.value)}
+                  >
+                    <View
+                      className='px-3 py-1.5 rounded-full'
+                      style={{ backgroundColor: option.color }}
+                    >
+                      <Text className='text-sm font-medium text-white'>{option.label}</Text>
+                    </View>
+                    {trade.status === option.value && (
+                      <Ionicons name='checkmark' size={20} color='#3B82F6' />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
         </View>
 
-        {trade.partner && (
-          <View className='bg-white rounded-xl p-4 mb-4'>
-            <Text className='text-sm font-medium text-gray-600 mb-2'>取引相手</Text>
-            <Text className='text-base text-gray-900'>{trade.partner}</Text>
-          </View>
-        )}
+        <View className='bg-white rounded-xl p-4 mb-4'>
+          <Text className='text-sm font-medium text-gray-600 mb-2'>取引相手</Text>
+          <Text className='text-base text-gray-900'>{trade.partner_name}</Text>
+        </View>
 
-        {trade.my_items && (
+        {trade.payment_method && (
           <View className='bg-white rounded-xl p-4 mb-4'>
-            <Text className='text-sm font-medium text-gray-600 mb-2'>自分の提供物</Text>
-            <Text className='text-base text-gray-900'>{trade.my_items}</Text>
-          </View>
-        )}
-
-        {trade.partner_items && (
-          <View className='bg-white rounded-xl p-4 mb-4'>
-            <Text className='text-sm font-medium text-gray-600 mb-2'>相手の提供物</Text>
-            <Text className='text-base text-gray-900'>{trade.partner_items}</Text>
-          </View>
-        )}
-
-        {trade.price && (
-          <View className='bg-white rounded-xl p-4 mb-4'>
-            <Text className='text-sm font-medium text-gray-600 mb-2'>金額</Text>
-            <Text className='text-base text-gray-900'>¥{trade.price.toLocaleString()}</Text>
-          </View>
-        )}
-
-        {trade.event_date && (
-          <View className='bg-white rounded-xl p-4 mb-4'>
-            <Text className='text-sm font-medium text-gray-600 mb-2'>イベント日</Text>
+            <Text className='text-sm font-medium text-gray-600 mb-2'>支払い方法</Text>
             <Text className='text-base text-gray-900'>
-              {new Date(trade.event_date).toLocaleDateString('ja-JP')}
+              {trade.payment_method === 'cash' && '現金'}
+              {trade.payment_method === 'bank_transfer' && '銀行振込'}
+              {trade.payment_method === 'credit_card' && 'クレジットカード'}
+              {trade.payment_method === 'digital_payment' && 'デジタル決済'}
+              {trade.payment_method === 'other' && 'その他'}
             </Text>
           </View>
         )}
@@ -198,44 +211,6 @@ export default function TradeDetailScreen() {
           </Text>
         </View>
       </ScrollView>
-
-      {/* Status Modal */}
-      <Modal
-        animationType='slide'
-        transparent={true}
-        visible={statusModalVisible}
-        onRequestClose={() => setStatusModalVisible(false)}
-      >
-        <View className='flex-1 bg-black/50 justify-center items-center'>
-          <View className='bg-white rounded-xl p-5 m-5 max-h-4/5 w-11/12'>
-            <View className='flex-row justify-between items-center mb-5'>
-              <Text className='text-lg font-semibold text-gray-900'>ステータスを変更</Text>
-              <TouchableOpacity onPress={() => setStatusModalVisible(false)}>
-                <Ionicons name='close' size={24} color='#6B7280' />
-              </TouchableOpacity>
-            </View>
-            {statusOptions.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                className={`flex-row items-center justify-between py-3 border-b border-gray-100 ${
-                  trade.status === option.value ? 'bg-blue-50' : ''
-                }`}
-                onPress={() => handleStatusChange(option.value)}
-              >
-                <View
-                  className='px-3 py-1.5 rounded-full'
-                  style={{ backgroundColor: option.color }}
-                >
-                  <Text className='text-sm font-medium text-white'>{option.label}</Text>
-                </View>
-                {trade.status === option.value && (
-                  <Ionicons name='checkmark' size={20} color='#3B82F6' />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </Modal>
 
       {/* Action Modal */}
       <Modal
