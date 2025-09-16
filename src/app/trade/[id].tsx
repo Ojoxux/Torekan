@@ -30,7 +30,7 @@ export default function TradeDetailScreen() {
 
   const statusOptions: { value: TradeStatus; label: string; color: string }[] = [
     { value: TradeStatus.PLANNED, label: '計画中', color: '#3B82F6' },
-    { value: TradeStatus.SHIPPED, label: '発送済み', color: '#06B6D4' },
+    { value: TradeStatus.SHIPPED, label: '発送済み', color: '#10B981' },
     { value: TradeStatus.COMPLETED, label: '完了', color: '#6B7280' },
     { value: TradeStatus.CANCELED, label: 'キャンセル', color: '#EF4444' },
   ];
