@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { queryClient } from '@/lib/queryClient';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 
@@ -53,6 +53,20 @@ export default function SettingsScreen() {
               />
             </View>
           </View>
+        </View>
+
+        <View className='bg-white rounded-lg shadow-sm mt-4'>
+          <Link href='/settings/categories' asChild>
+            <Pressable className='p-4 flex-row items-center justify-between active:bg-gray-50'>
+              <View className='flex-1'>
+                <Text className='text-gray-900 font-medium'>グッズカテゴリ管理</Text>
+                <Text className='text-gray-500 text-sm mt-1'>
+                  取引のカテゴリを管理
+                </Text>
+              </View>
+              <Text className='text-gray-400 text-lg'>›</Text>
+            </Pressable>
+          </Link>
         </View>
 
         <View className='bg-white rounded-lg shadow-sm mt-4 p-4'>
