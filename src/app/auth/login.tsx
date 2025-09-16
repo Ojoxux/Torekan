@@ -1,6 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, router } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -28,8 +28,11 @@ export default function LoginScreen() {
     try {
       await signIn(email, password);
       router.replace('/(tabs)');
-    } catch (error: any) {
-      Alert.alert('ログインエラー', error.message || 'ログインに失敗しました');
+    } catch (error) {
+      Alert.alert(
+        'ログインエラー',
+        error instanceof Error ? error.message : 'ログインに失敗しました'
+      );
     } finally {
       setLoading(false);
     }
@@ -57,7 +60,7 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View>
+          <View className='mt-4'>
             <Text className='text-sm font-medium text-gray-700 mb-1'>パスワード</Text>
             <TextInput
               className='border border-gray-300 rounded-lg px-3 py-2 text-base'
@@ -69,17 +72,19 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity
-            className={`bg-blue-500 rounded-lg py-3 ${loading ? 'opacity-50' : ''}`}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color='white' />
-            ) : (
-              <Text className='text-white text-center font-semibold text-base'>ログイン</Text>
-            )}
-          </TouchableOpacity>
+          <View className='mt-4'>
+            <TouchableOpacity
+              className={`bg-blue-500 rounded-lg py-3 ${loading ? 'opacity-50' : ''}`}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color='white' />
+              ) : (
+                <Text className='text-white text-center font-semibold text-base'>ログイン</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View className='mt-6'>

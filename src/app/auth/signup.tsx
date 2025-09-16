@@ -43,8 +43,11 @@ export default function SignupScreen() {
         'アカウントの作成が完了しました。メールを確認してアカウントを有効化してください。',
         [{ text: 'OK', onPress: () => router.replace('./login') }]
       );
-    } catch (error: any) {
-      Alert.alert('登録エラー', error.message || 'アカウントの作成に失敗しました');
+    } catch (error) {
+      Alert.alert(
+        '登録エラー',
+        error instanceof Error ? error.message : 'アカウントの作成に失敗しました'
+      );
     } finally {
       setLoading(false);
     }
@@ -72,7 +75,7 @@ export default function SignupScreen() {
             />
           </View>
 
-          <View>
+          <View className='mt-4'>
             <Text className='text-sm font-medium text-gray-700 mb-1'>パスワード</Text>
             <TextInput
               className='border border-gray-300 rounded-lg px-3 py-2 text-base'
@@ -84,7 +87,7 @@ export default function SignupScreen() {
             />
           </View>
 
-          <View>
+          <View className='mt-4'>
             <Text className='text-sm font-medium text-gray-700 mb-1'>パスワード（確認）</Text>
             <TextInput
               className='border border-gray-300 rounded-lg px-3 py-2 text-base'
@@ -96,17 +99,21 @@ export default function SignupScreen() {
             />
           </View>
 
-          <TouchableOpacity
-            className={`bg-blue-500 rounded-lg py-3 ${loading ? 'opacity-50' : ''}`}
-            onPress={handleSignup}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color='white' />
-            ) : (
-              <Text className='text-white text-center font-semibold text-base'>アカウント作成</Text>
-            )}
-          </TouchableOpacity>
+          <View className='mt-4'>
+            <TouchableOpacity
+              className={`bg-blue-500 rounded-lg py-3 ${loading ? 'opacity-50' : ''}`}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color='white' />
+              ) : (
+                <Text className='text-white text-center font-semibold text-base'>
+                  アカウント作成
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View className='mt-6'>
