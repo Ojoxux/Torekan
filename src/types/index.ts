@@ -1,14 +1,24 @@
-export type TradeType = 'mail' | 'direct';
-export type TradeStatus = 'new' | 'in_progress' | 'waiting' | 'completed' | 'canceled';
+export type TradeType = 'sell' | 'buy';
+export type TradeStatus = 
+  | 'planning'
+  | 'waiting_payment'
+  | 'payment_sent'
+  | 'payment_received'
+  | 'shipping_sent'
+  | 'shipping_received'
+  | 'completed';
 export type SortOrder = 'created_at' | 'updated_at' | 'event_date' | 'status';
 
 export interface Trade {
   id: string;
   user_id: string;
-  my_character: string;
-  partner_character: string;
-  trade_type: TradeType;
+  title: string;
+  type: TradeType;
   status: TradeStatus;
+  partner?: string;
+  my_items?: string;
+  partner_items?: string;
+  price?: number;
   event_date?: string;
   notes?: string;
   is_archived: boolean;
@@ -43,19 +53,25 @@ export interface User {
 }
 
 export interface CreateTradeInput {
-  my_character: string;
-  partner_character: string;
-  trade_type: TradeType;
+  title: string;
+  type: TradeType;
   status?: TradeStatus;
+  partner?: string;
+  my_items?: string;
+  partner_items?: string;
+  price?: number;
   event_date?: string;
   notes?: string;
 }
 
 export interface UpdateTradeInput {
-  my_character?: string;
-  partner_character?: string;
-  trade_type?: TradeType;
+  title?: string;
+  type?: TradeType;
   status?: TradeStatus;
+  partner?: string;
+  my_items?: string;
+  partner_items?: string;
+  price?: number;
   event_date?: string;
   notes?: string;
   is_archived?: boolean;
