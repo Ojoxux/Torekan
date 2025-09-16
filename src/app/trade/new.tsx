@@ -24,7 +24,7 @@ export default function NewTradeScreen() {
 
   const [formData, setFormData] = useState({
     item_name: '',
-    type: TradeType.TRANSFER,
+    type: TradeType.EXCHANGE,
     partner_name: '',
     payment_method: undefined as PaymentMethod | undefined,
     notes: '',
@@ -128,9 +128,10 @@ export default function NewTradeScreen() {
               ].map((option) => (
                 <TouchableOpacity
                   key={option.value}
+                  activeOpacity={1.0}
                   className={`flex-1 py-3 px-4 rounded-lg border items-center ${
                     formData.type === option.value
-                      ? 'bg-blue-500 border-blue-500'
+                      ? 'bg-blue-600 border-blue-600'
                       : 'bg-white border-gray-300'
                   }`}
                   onPress={() => setFormData({ ...formData, type: option.value })}
