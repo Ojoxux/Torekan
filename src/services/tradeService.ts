@@ -3,10 +3,7 @@ import type { Trade } from '@/types';
 
 export const tradeService = {
   async getAll(includeArchived = false) {
-    let query = supabase
-      .from('trades')
-      .select('*')
-      .order('created_at', { ascending: false });
+    let query = supabase.from('trades').select('*').order('created_at', { ascending: false });
 
     if (!includeArchived) {
       query = query.eq('is_archived', false);
@@ -14,22 +11,20 @@ export const tradeService = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as Trade[];
+    return data || [];
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
-      .from('trades')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
+    const { data, error } = await supabase.from('trades').select('*').eq('id', id).single();
+
     if (error) throw error;
-    return data as Trade;
+    return data;
   },
 
   async create(trade: Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -42,10 +37,13 @@ export const tradeService = {
       .single();
 
     if (error) throw error;
-    return data as Trade;
+    return data;
   },
 
-  async update(id: string, updates: Partial<Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) {
+  async update(
+    id: string,
+    updates: Partial<Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ) {
     const { data, error } = await supabase
       .from('trades')
       .update(updates)
@@ -54,14 +52,11 @@ export const tradeService = {
       .single();
 
     if (error) throw error;
-    return data as Trade;
+    return data;
   },
 
   async delete(id: string) {
-    const { error } = await supabase
-      .from('trades')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('trades').delete().eq('id', id);
 
     if (error) throw error;
   },
@@ -74,25 +69,25 @@ export const tradeService = {
     return this.update(id, { is_archived: false });
   },
 
-  async search(query: string, filters?: { status?: Trade['status']; trade_type?: Trade['trade_type'] }) {
-    let supabaseQuery = supabase
-      .from('trades')
-      .select('*');
+  async search(query: string, filters?: { status?: Trade['status']; type?: Trade['type'] }) {
+    let supabaseQuery = supabase.from('trades').select('*');
 
     if (query) {
-      supabaseQuery = supabaseQuery.or(`my_character.ilike.%${query}%,partner_character.ilike.%${query}%,notes.ilike.%${query}%`);
+      supabaseQuery = supabaseQuery.or(
+        `title.ilike.%${query}%,partner.ilike.%${query}%,my_items.ilike.%${query}%,partner_items.ilike.%${query}%,notes.ilike.%${query}%`
+      );
     }
 
     if (filters?.status) {
       supabaseQuery = supabaseQuery.eq('status', filters.status);
     }
 
-    if (filters?.trade_type) {
-      supabaseQuery = supabaseQuery.eq('trade_type', filters.trade_type);
+    if (filters?.type) {
+      supabaseQuery = supabaseQuery.eq('type', filters.type);
     }
 
     const { data, error } = await supabaseQuery.order('created_at', { ascending: false });
     if (error) throw error;
-    return data as Trade[];
+    return data || [];
   },
 };

@@ -13,6 +13,9 @@ export default function RootLayout() {
           <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
           <Stack.Screen name='auth/login' options={{ title: 'ログイン', headerShown: false }} />
           <Stack.Screen name='auth/signup' options={{ title: 'アカウント作成', headerShown: false }} />
+          <Stack.Screen name='trade/new' options={{ headerShown: false }} />
+          <Stack.Screen name='trade/[id]' options={{ headerShown: false }} />
+          <Stack.Screen name='trade/edit/[id]' options={{ headerShown: false }} />
         </Stack>
       </AuthProvider>
     </QueryClientProvider>
