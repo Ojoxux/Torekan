@@ -167,6 +167,7 @@ export default function EditTradeScreen() {
               ].map((option) => (
                 <TouchableOpacity
                   key={option.value}
+                  activeOpacity={1.0}
                   className={`flex-1 py-3 px-4 rounded-lg border items-center ${
                     formData.type === option.value
                       ? 'bg-blue-500 border-blue-500'
@@ -205,6 +206,7 @@ export default function EditTradeScreen() {
               ].map((option) => (
                 <TouchableOpacity
                   key={option.value}
+                  activeOpacity={1.0}
                   className={`py-2 px-3 rounded-lg border ${
                     formData.payment_method === option.value
                       ? 'bg-blue-500 border-blue-500'

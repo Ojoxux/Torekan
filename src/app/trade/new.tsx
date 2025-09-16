@@ -167,6 +167,7 @@ export default function NewTradeScreen() {
               ].map((option) => (
                 <TouchableOpacity
                   key={option.value}
+                  activeOpacity={1.0}
                   className={`py-2 px-3 rounded-lg border ${
                     formData.payment_method === option.value
                       ? 'bg-blue-500 border-blue-500'

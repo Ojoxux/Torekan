@@ -4,14 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-   ActivityIndicator,
-   Alert,
-   Modal,
-   SafeAreaView,
-   ScrollView,
-   Text,
-   TouchableOpacity,
-   View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 /*
@@ -121,7 +121,9 @@ export default function TradeDetailScreen() {
       <ScrollView className='flex-1 p-4'>
         <View className='bg-white rounded-xl p-4 mb-4'>
           <View className='flex-row justify-between items-start mb-3'>
-            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>{trade.item_name}</Text>
+            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>
+              {trade.item_name}
+            </Text>
             <View className='bg-blue-50 px-3 py-1 rounded-full'>
               <Text className='text-xs font-medium text-blue-600'>
                 {trade.type === TradeType.EXCHANGE && '交換'}
@@ -136,6 +138,7 @@ export default function TradeDetailScreen() {
             <TouchableOpacity
               className='flex-row items-center justify-between'
               onPress={() => setStatusDropdownVisible(!statusDropdownVisible)}
+              activeOpacity={1.0}
             >
               <View
                 className='px-3 py-1.5 rounded-full'
@@ -143,23 +146,24 @@ export default function TradeDetailScreen() {
               >
                 <Text className='text-sm font-medium text-white'>{currentStatus?.label}</Text>
               </View>
-              <Ionicons 
-                name={statusDropdownVisible ? 'chevron-up' : 'chevron-down'} 
-                size={16} 
-                color='#6B7280' 
+              <Ionicons
+                name={statusDropdownVisible ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color='#6B7280'
               />
             </TouchableOpacity>
-            
+
             {statusDropdownVisible && (
               <View className='absolute top-10 left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-10'>
                 {statusOptions.map((option) => (
                   <TouchableOpacity
                     key={option.value}
+                    activeOpacity={1.0}
                     className={`flex-row items-center justify-between py-3 px-3 ${
-                      option.value !== statusOptions[statusOptions.length - 1].value ? 'border-b border-gray-100' : ''
-                    } ${
-                      trade.status === option.value ? 'bg-blue-50' : ''
-                    }`}
+                      option.value !== statusOptions[statusOptions.length - 1].value
+                        ? 'border-b border-gray-100'
+                        : ''
+                    } ${trade.status === option.value ? 'bg-blue-50' : ''}`}
                     onPress={() => handleStatusChange(option.value)}
                   >
                     <View
@@ -222,6 +226,7 @@ export default function TradeDetailScreen() {
         <View className='flex-1 bg-black/50 justify-center items-center'>
           <View className='bg-white rounded-xl p-2 m-5 min-w-[200px]'>
             <TouchableOpacity
+              activeOpacity={1.0}
               className='flex-row items-center py-4 px-4 gap-3'
               onPress={() => {
                 setActionModalVisible(false);
