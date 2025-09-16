@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Trade } from '@/types';
+import type { CreateTradeInput, UpdateTradeInput, TradeStatus, TradeType } from '@/types';
 
 export const tradeService = {
   async getAll(includeArchived = false) {
@@ -21,7 +21,7 @@ export const tradeService = {
     return data;
   },
 
-  async create(trade: Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
+  async create(trade: CreateTradeInput) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -40,10 +40,7 @@ export const tradeService = {
     return data;
   },
 
-  async update(
-    id: string,
-    updates: Partial<Omit<Trade, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
-  ) {
+  async update(id: string, updates: UpdateTradeInput) {
     const { data, error } = await supabase
       .from('trades')
       .update(updates)
@@ -69,12 +66,12 @@ export const tradeService = {
     return this.update(id, { is_archived: false });
   },
 
-  async search(query: string, filters?: { status?: Trade['status']; type?: Trade['type'] }) {
+  async search(query: string, filters?: { status?: TradeStatus; type?: TradeType }) {
     let supabaseQuery = supabase.from('trades').select('*');
 
     if (query) {
       supabaseQuery = supabaseQuery.or(
-        `title.ilike.%${query}%,partner.ilike.%${query}%,my_items.ilike.%${query}%,partner_items.ilike.%${query}%,notes.ilike.%${query}%`
+        `item_name.ilike.%${query}%,partner_name.ilike.%${query}%,notes.ilike.%${query}%`
       );
     }
 
