@@ -1,21 +1,26 @@
 import * as v from 'valibot';
+import { TradeType, TradeStatus, PaymentMethod } from '../types';
 
 // 取引のバリデーションスキーマ
 export const tradeSchema = v.object({
-  title: v.pipe(
+  item_name: v.pipe(
     v.string(),
-    v.minLength(1, '取引名は必須です'),
-    v.maxLength(128, '取引名は128文字以内で入力してください')
+    v.minLength(1, 'アイテム名は必須です'),
+    v.maxLength(128, 'アイテム名は128文字以内で入力してください')
   ),
-  partner_name: v.optional(
-    v.nullable(v.pipe(v.string(), v.maxLength(64, '取引相手名は64文字以内で入力してください')))
+  partner_name: v.pipe(
+    v.string(),
+    v.minLength(1, '取引相手名は必須です'),
+    v.maxLength(64, '取引相手名は64文字以内で入力してください')
   ),
-  item_memo: v.optional(
+  type: v.enum(TradeType, '取引種別を選択してください'),
+  status: v.optional(v.enum(TradeStatus), TradeStatus.PLANNED),
+  payment_method: v.optional(v.nullable(v.enum(PaymentMethod))),
+  item_id: v.optional(v.nullable(v.string())),
+  partner_id: v.optional(v.nullable(v.string())),
+  notes: v.optional(
     v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
   ),
-  status: v.picklist(['連絡待ち', '住所交換済み', '発送待ち', '発送済み', '完了']),
-  trade_type: v.picklist(['交換', '譲渡', '買取']),
-  shipping_deadline: v.optional(v.nullable(v.string())),
   is_archived: v.optional(v.boolean(), false),
 });
 
@@ -39,5 +44,13 @@ export const settingsSchema = v.object({
 
 // フォーム用の型エクスポート
 export type TradeFormInput = v.InferInput<typeof tradeSchema>;
+
+// 取引作成用のスキーマ（is_archivedを除外）
+export const createTradeSchema = v.omit(tradeSchema, ['is_archived']);
+export type CreateTradeFormInput = v.InferInput<typeof createTradeSchema>;
+
+// 取引更新用のスキーマ（全フィールドをオプショナルに）
+export const updateTradeSchema = v.partial(tradeSchema);
+export type UpdateTradeFormInput = v.InferInput<typeof updateTradeSchema>;
 export type TodoFormInput = v.InferInput<typeof todoSchema>;
 export type SettingsFormInput = v.InferInput<typeof settingsSchema>;

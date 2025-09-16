@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tradeService } from '@/services/tradeService';
-import { Trade, TradeStatus, TradeType, CreateTradeInput } from '@/types';
+import { TradeStatus, TradeType, CreateTradeInput, UpdateTradeInput } from '@/types';
 
 interface TradeFilters {
   status?: TradeStatus;
@@ -27,10 +27,9 @@ export function useTrades(filters?: TradeFilters) {
         const keyword = filters.keyword.toLowerCase();
         filtered = filtered.filter(
           (trade) =>
-            trade.title.toLowerCase().includes(keyword) ||
-            trade.partner?.toLowerCase().includes(keyword) ||
-            trade.my_items?.toLowerCase().includes(keyword) ||
-            trade.partner_items?.toLowerCase().includes(keyword)
+            trade.item_name.toLowerCase().includes(keyword) ||
+            trade.partner_name.toLowerCase().includes(keyword) ||
+            trade.notes?.toLowerCase().includes(keyword)
         );
       }
 
@@ -51,21 +50,7 @@ export function useCreateTrade() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (trade: CreateTradeInput) => {
-      const tradeData = {
-        title: trade.title,
-        type: trade.type,
-        status: trade.status || 'planning' as TradeStatus,
-        partner: trade.partner,
-        my_items: trade.my_items,
-        partner_items: trade.partner_items,
-        price: trade.price,
-        event_date: trade.event_date,
-        notes: trade.notes,
-        is_archived: false,
-      };
-      return tradeService.create(tradeData);
-    },
+    mutationFn: (trade: CreateTradeInput) => tradeService.create(trade),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['trades'] });
     },
@@ -76,7 +61,7 @@ export function useUpdateTrade() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, trade }: { id: string; trade: Partial<Trade> }) =>
+    mutationFn: ({ id, trade }: { id: string; trade: UpdateTradeInput }) =>
       tradeService.update(id, trade),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['trades'] });
