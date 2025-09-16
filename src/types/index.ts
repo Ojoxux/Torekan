@@ -1,25 +1,37 @@
-export type TradeType = 'sell' | 'buy';
-export type TradeStatus = 
-  | 'planning'
-  | 'waiting_payment'
-  | 'payment_sent'
-  | 'payment_received'
-  | 'shipping_sent'
-  | 'shipping_received'
-  | 'completed';
-export type SortOrder = 'created_at' | 'updated_at' | 'event_date' | 'status';
+export enum TradeType {
+  EXCHANGE = 'exchange',
+  TRANSFER = 'transfer',
+  PURCHASE = 'purchase',
+  SALE = 'sale',
+}
+
+export enum TradeStatus {
+  PLANNED = 'planned',
+  SHIPPED = 'shipped',
+  COMPLETED = 'completed',
+  CANCELED = 'canceled',
+}
+
+export enum PaymentMethod {
+  CASH = 'cash',
+  BANK_TRANSFER = 'bank_transfer',
+  CREDIT_CARD = 'credit_card',
+  DIGITAL_PAYMENT = 'digital_payment',
+  OTHER = 'other',
+}
+
+export type SortOrder = 'created_at' | 'updated_at' | 'status';
 
 export interface Trade {
   id: string;
   user_id: string;
-  title: string;
+  item_name: string;
+  partner_name: string;
   type: TradeType;
   status: TradeStatus;
-  partner?: string;
-  my_items?: string;
-  partner_items?: string;
-  price?: number;
-  event_date?: string;
+  payment_method?: PaymentMethod;
+  item_id?: string;
+  partner_id?: string;
   notes?: string;
   is_archived: boolean;
   created_at: string;
@@ -53,26 +65,24 @@ export interface User {
 }
 
 export interface CreateTradeInput {
-  title: string;
+  item_name: string;
+  partner_name: string;
   type: TradeType;
   status?: TradeStatus;
-  partner?: string;
-  my_items?: string;
-  partner_items?: string;
-  price?: number;
-  event_date?: string;
+  payment_method?: PaymentMethod;
+  item_id?: string;
+  partner_id?: string;
   notes?: string;
 }
 
 export interface UpdateTradeInput {
-  title?: string;
+  item_name?: string;
+  partner_name?: string;
   type?: TradeType;
   status?: TradeStatus;
-  partner?: string;
-  my_items?: string;
-  partner_items?: string;
-  price?: number;
-  event_date?: string;
+  payment_method?: PaymentMethod;
+  item_id?: string;
+  partner_id?: string;
   notes?: string;
   is_archived?: boolean;
 }
