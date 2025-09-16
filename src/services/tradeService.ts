@@ -1,15 +1,12 @@
 import { supabase } from '@/lib/supabase';
-import type { CreateTradeInput, UpdateTradeInput, TradeStatus, TradeType } from '@/types';
+import type { CreateTradeInput, TradeStatus, TradeType, UpdateTradeInput } from '@/types';
 
 export const tradeService = {
-  async getAll(includeArchived = false) {
-    let query = supabase.from('trades').select('*').order('created_at', { ascending: false });
-
-    if (!includeArchived) {
-      query = query.eq('is_archived', false);
-    }
-
-    const { data, error } = await query;
+  async getAll() {
+    const { data, error } = await supabase
+      .from('trades')
+      .select('*')
+      .order('created_at', { ascending: false });
     if (error) throw error;
     return data || [];
   },
@@ -56,14 +53,6 @@ export const tradeService = {
     const { error } = await supabase.from('trades').delete().eq('id', id);
 
     if (error) throw error;
-  },
-
-  async archive(id: string) {
-    return this.update(id, { is_archived: true });
-  },
-
-  async unarchive(id: string) {
-    return this.update(id, { is_archived: false });
   },
 
   async search(query: string, filters?: { status?: TradeStatus; type?: TradeType }) {

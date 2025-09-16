@@ -1,5 +1,5 @@
 import * as v from 'valibot';
-import { TradeType, TradeStatus, PaymentMethod } from '../types';
+import { PaymentMethod, TradeStatus, TradeType } from '../types';
 
 // 取引のバリデーションスキーマ
 export const tradeSchema = v.object({
@@ -21,7 +21,6 @@ export const tradeSchema = v.object({
   notes: v.optional(
     v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
   ),
-  is_archived: v.optional(v.boolean(), false),
 });
 
 // ToDoのバリデーションスキーマ
@@ -37,7 +36,6 @@ export const todoSchema = v.object({
 
 // 設定のバリデーションスキーマ
 export const settingsSchema = v.object({
-  auto_archive_on_complete: v.optional(v.boolean(), true),
   allow_cloud_backup: v.optional(v.boolean(), false),
   is_passcode_lock_enabled: v.optional(v.boolean(), false),
 });
@@ -45,8 +43,8 @@ export const settingsSchema = v.object({
 // フォーム用の型エクスポート
 export type TradeFormInput = v.InferInput<typeof tradeSchema>;
 
-// 取引作成用のスキーマ（is_archivedを除外）
-export const createTradeSchema = v.omit(tradeSchema, ['is_archived']);
+// 取引作成用のスキーマ
+export const createTradeSchema = tradeSchema;
 export type CreateTradeFormInput = v.InferInput<typeof createTradeSchema>;
 
 // 取引更新用のスキーマ（全フィールドをオプショナルに）

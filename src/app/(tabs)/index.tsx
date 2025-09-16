@@ -31,7 +31,7 @@ export default function TradesScreen() {
     keyword: keyword.length > 0 ? keyword : undefined,
   });
 
-  const activeTrades = trades.filter((trade: Trade) => !trade.is_archived);
+  const activeTrades = trades;
 
   const handleRefresh = async () => {
     setRefreshing(true);
