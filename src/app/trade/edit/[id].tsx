@@ -1,5 +1,5 @@
 import { useTrade, useUpdateTrade } from '@/hooks/useTrades';
-import { TradeType } from '@/types';
+import { TradeType, PaymentMethod } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -26,46 +26,41 @@ export default function EditTradeScreen() {
   const updateTrade = useUpdateTrade();
 
   const [formData, setFormData] = useState({
-    title: '',
-    type: 'sell' as TradeType,
-    partner: '',
-    myItems: '',
-    partnerItems: '',
-    price: '',
-    eventDate: '',
+    item_name: '',
+    type: TradeType.TRANSFER,
+    partner_name: '',
+    payment_method: undefined as PaymentMethod | undefined,
     notes: '',
   });
 
   useEffect(() => {
     if (trade) {
       setFormData({
-        title: trade.title || '',
+        item_name: trade.item_name || '',
         type: trade.type,
-        partner: trade.partner || '',
-        myItems: trade.my_items || '',
-        partnerItems: trade.partner_items || '',
-        price: trade.price ? trade.price.toString() : '',
-        eventDate: trade.event_date || '',
+        partner_name: trade.partner_name || '',
+        payment_method: trade.payment_method,
         notes: trade.notes || '',
       });
     }
   }, [trade]);
 
   const handleSubmit = async () => {
-    if (!formData.title.trim()) {
-      Alert.alert('エラー', 'タイトルを入力してください。');
+    if (!formData.item_name.trim()) {
+      Alert.alert('エラー', 'アイテム名を入力してください。');
+      return;
+    }
+    if (!formData.partner_name.trim()) {
+      Alert.alert('エラー', '取引相手名を入力してください。');
       return;
     }
 
     try {
       const tradeData = {
-        title: formData.title.trim(),
+        item_name: formData.item_name.trim(),
+        partner_name: formData.partner_name.trim(),
         type: formData.type,
-        partner: formData.partner.trim() || undefined,
-        my_items: formData.myItems.trim() || undefined,
-        partner_items: formData.partnerItems.trim() || undefined,
-        price: formData.price ? parseInt(formData.price, 10) : undefined,
-        event_date: formData.eventDate || undefined,
+        payment_method: formData.payment_method,
         notes: formData.notes.trim() || undefined,
       };
 
@@ -155,90 +150,84 @@ export default function EditTradeScreen() {
 
         <ScrollView className='flex-1 p-4' showsVerticalScrollIndicator={false}>
           {renderInputField(
-            'タイトル',
-            formData.title,
-            (text) => setFormData({ ...formData, title: text }),
-            { placeholder: '例: コミケ100 グッズ交換', required: true }
+            'アイテム名',
+            formData.item_name,
+            (text) => setFormData({ ...formData, item_name: text }),
+            { placeholder: '例: アクリルスタンド A', required: true }
           )}
 
           <View className='mb-5'>
             <Text className='text-base font-medium text-gray-700 mb-2'>取引種別</Text>
-            <View className='flex-row gap-3'>
-              <TouchableOpacity
-                className={`flex-1 py-3 px-4 rounded-lg border items-center ${
-                  formData.type === 'sell'
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white border-gray-300'
-                }`}
-                onPress={() => setFormData({ ...formData, type: 'sell' })}
-              >
-                <Text
-                  className={`text-base font-medium ${
-                    formData.type === 'sell' ? 'text-white' : 'text-gray-600'
+            <View className='flex-row flex-wrap gap-3'>
+              {[
+                { value: TradeType.EXCHANGE, label: '交換' },
+                { value: TradeType.TRANSFER, label: '譲渡' },
+                { value: TradeType.PURCHASE, label: '買取' },
+                { value: TradeType.SALE, label: '売却' },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  className={`flex-1 py-3 px-4 rounded-lg border items-center ${
+                    formData.type === option.value
+                      ? 'bg-blue-500 border-blue-500'
+                      : 'bg-white border-gray-300'
                   }`}
+                  onPress={() => setFormData({ ...formData, type: option.value })}
                 >
-                  譲渡
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                className={`flex-1 py-3 px-4 rounded-lg border items-center ${
-                  formData.type === 'buy'
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white border-gray-300'
-                }`}
-                onPress={() => setFormData({ ...formData, type: 'buy' })}
-              >
-                <Text
-                  className={`text-base font-medium ${
-                    formData.type === 'buy' ? 'text-white' : 'text-gray-600'
-                  }`}
-                >
-                  求
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    className={`text-base font-medium ${
+                      formData.type === option.value ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
           {renderInputField(
             '取引相手',
-            formData.partner,
-            (text) => setFormData({ ...formData, partner: text }),
-            { placeholder: '@username または 名前' }
+            formData.partner_name,
+            (text) => setFormData({ ...formData, partner_name: text }),
+            { placeholder: '@username または 名前', required: true }
           )}
 
-          {renderInputField(
-            '自分の提供物',
-            formData.myItems,
-            (text) => setFormData({ ...formData, myItems: text }),
-            {
-              placeholder: '例: アクリルスタンド A, ポストカード B',
-              multiline: true,
-            }
-          )}
-
-          {renderInputField(
-            '相手の提供物',
-            formData.partnerItems,
-            (text) => setFormData({ ...formData, partnerItems: text }),
-            {
-              placeholder: '例: 缶バッジ C, クリアファイル D',
-              multiline: true,
-            }
-          )}
-
-          {renderInputField(
-            '金額',
-            formData.price,
-            (text) => setFormData({ ...formData, price: text }),
-            { placeholder: '円', keyboardType: 'numeric' }
-          )}
-
-          {renderInputField(
-            'イベント日',
-            formData.eventDate,
-            (text) => setFormData({ ...formData, eventDate: text }),
-            { placeholder: 'YYYY-MM-DD' }
-          )}
+          <View className='mb-5'>
+            <Text className='text-base font-medium text-gray-700 mb-2'>支払い方法</Text>
+            <View className='flex-row flex-wrap gap-2'>
+              {[
+                { value: PaymentMethod.CASH, label: '現金' },
+                { value: PaymentMethod.BANK_TRANSFER, label: '銀行振込' },
+                { value: PaymentMethod.CREDIT_CARD, label: 'クレジットカード' },
+                { value: PaymentMethod.DIGITAL_PAYMENT, label: 'デジタル決済' },
+                { value: PaymentMethod.OTHER, label: 'その他' },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  className={`py-2 px-3 rounded-lg border ${
+                    formData.payment_method === option.value
+                      ? 'bg-blue-500 border-blue-500'
+                      : 'bg-white border-gray-300'
+                  }`}
+                  onPress={() => 
+                    setFormData({ 
+                      ...formData, 
+                      payment_method: formData.payment_method === option.value ? undefined : option.value 
+                    })
+                  }
+                >
+                  <Text
+                    className={`text-sm font-medium ${
+                      formData.payment_method === option.value ? 'text-white' : 'text-gray-600'
+                    }`}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
           {renderInputField(
             'メモ',
