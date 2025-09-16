@@ -1,5 +1,3 @@
-import { useTrades } from '@/hooks/useTrades';
-import { Trade, TradeStatus, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Href, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -12,18 +10,25 @@ import {
   View,
 } from 'react-native';
 
+import { FilterChips } from '@/components/common/FilterChips';
+import { SearchBar } from '@/components/common/SearchBar';
+import { useTrades } from '@/hooks/useTrades';
+import { useFilterStore } from '@/store/filterStore';
+import { Trade, TradeStatus, TradeType } from '@/types';
+
 export default function TradesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
+  const { keyword, selectedStatuses, selectedTypes, setKeyword } = useFilterStore();
 
   const {
     data: trades = [],
     isLoading,
     refetch,
   } = useTrades({
-    status: undefined,
-    type: undefined,
-    keyword: undefined,
+    status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
+    type: selectedTypes.length > 0 ? selectedTypes : undefined,
+    keyword: keyword.length > 0 ? keyword : undefined,
   });
 
   const activeTrades = trades.filter((trade: Trade) => !trade.is_archived);
@@ -93,7 +98,8 @@ export default function TradesScreen() {
     </TouchableOpacity>
   );
 
-  if (isLoading) {
+  // 初回ロード時のみフルスクリーンローディングを表示
+  if (isLoading && !trades.length) {
     return (
       <View className='flex-1 justify-center items-center bg-gray-50'>
         <ActivityIndicator size='large' color='#3B82F6' />
@@ -103,6 +109,12 @@ export default function TradesScreen() {
 
   return (
     <View className='flex-1 bg-gray-50'>
+      {/* 検索・フィルタエリア */}
+      <View className='bg-white px-4 py-3 border-b border-gray-100'>
+        <SearchBar value={keyword} onChangeText={setKeyword} />
+        <FilterChips />
+      </View>
+
       <FlatList
         data={activeTrades}
         renderItem={renderTradeItem}

@@ -1,41 +1,42 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { tradeService } from '@/services/tradeService';
-import { TradeStatus, TradeType, CreateTradeInput, UpdateTradeInput } from '@/types';
+import { CreateTradeInput, TradeStatus, TradeType, UpdateTradeInput } from '@/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 interface TradeFilters {
-  status?: TradeStatus;
-  type?: TradeType;
+  status?: TradeStatus | TradeStatus[];
+  type?: TradeType | TradeType[];
   keyword?: string;
 }
 
 export function useTrades(filters?: TradeFilters) {
-  return useQuery({
-    queryKey: ['trades', filters],
+  const query = useQuery({
+    queryKey: ['trades'],
     queryFn: () => tradeService.getAll(),
-    select: (data) => {
-      let filtered = data;
-
-      if (filters?.status) {
-        filtered = filtered.filter((trade) => trade.status === filters.status);
-      }
-
-      if (filters?.type) {
-        filtered = filtered.filter((trade) => trade.type === filters.type);
-      }
-
-      if (filters?.keyword) {
-        const keyword = filters.keyword.toLowerCase();
-        filtered = filtered.filter(
-          (trade) =>
-            trade.item_name.toLowerCase().includes(keyword) ||
-            trade.partner_name.toLowerCase().includes(keyword) ||
-            trade.notes?.toLowerCase().includes(keyword)
-        );
-      }
-
-      return filtered;
-    },
   });
+
+  const filteredData = useMemo(() => {
+    let filtered = query.data ?? [];
+
+    if (filters?.status) {
+      const statuses = Array.isArray(filters.status) ? filters.status : [filters.status];
+      filtered = filtered.filter((trade) => statuses.includes(trade.status));
+    }
+
+    if (filters?.type) {
+      const types = Array.isArray(filters.type) ? filters.type : [filters.type];
+      filtered = filtered.filter((trade) => types.includes(trade.type));
+    }
+
+    const keyword = filters?.keyword?.trim().toLowerCase() ?? '';
+    if (keyword.length > 0) {
+      filtered = filtered.filter((trade) => trade.item_name.toLowerCase().includes(keyword));
+    }
+
+    return filtered;
+  }, [query.data, filters]);
+
+  return { ...query, data: filteredData };
 }
 
 export function useTrade(id: string) {
