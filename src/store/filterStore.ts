@@ -5,6 +5,7 @@ export interface FilterState {
   keyword: string;
   selectedStatuses: TradeStatus[];
   selectedTypes: TradeType[];
+  selectedCategoryIds: string[];
   isFilterActive: boolean;
 }
 
@@ -12,6 +13,7 @@ export interface FilterActions {
   setKeyword: (keyword: string) => void;
   toggleStatus: (status: TradeStatus) => void;
   toggleType: (type: TradeType) => void;
+  toggleCategory: (categoryId: string) => void;
   clearAllFilters: () => void;
   getActiveFiltersCount: () => number;
 }
@@ -22,6 +24,7 @@ const initialState: FilterState = {
   keyword: '',
   selectedStatuses: [],
   selectedTypes: [],
+  selectedCategoryIds: [],
   isFilterActive: false,
 };
 
@@ -33,7 +36,10 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
     set((state) => ({
       keyword: trimmedKeyword,
       isFilterActive:
-        trimmedKeyword.length > 0 || state.selectedStatuses.length > 0 || state.selectedTypes.length > 0,
+        trimmedKeyword.length > 0 || 
+        state.selectedStatuses.length > 0 || 
+        state.selectedTypes.length > 0 || 
+        state.selectedCategoryIds.length > 0,
     }));
   },
 
@@ -46,7 +52,10 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       return {
         selectedStatuses,
         isFilterActive:
-          state.keyword.length > 0 || selectedStatuses.length > 0 || state.selectedTypes.length > 0,
+          state.keyword.length > 0 || 
+          selectedStatuses.length > 0 || 
+          state.selectedTypes.length > 0 || 
+          state.selectedCategoryIds.length > 0,
       };
     }),
 
@@ -59,7 +68,26 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       return {
         selectedTypes,
         isFilterActive:
-          state.keyword.length > 0 || state.selectedStatuses.length > 0 || selectedTypes.length > 0,
+          state.keyword.length > 0 || 
+          state.selectedStatuses.length > 0 || 
+          selectedTypes.length > 0 || 
+          state.selectedCategoryIds.length > 0,
+      };
+    }),
+
+  toggleCategory: (categoryId: string) =>
+    set((state) => {
+      const selectedCategoryIds = state.selectedCategoryIds.includes(categoryId)
+        ? state.selectedCategoryIds.filter((id) => id !== categoryId)
+        : [...state.selectedCategoryIds, categoryId];
+
+      return {
+        selectedCategoryIds,
+        isFilterActive:
+          state.keyword.length > 0 || 
+          state.selectedStatuses.length > 0 || 
+          state.selectedTypes.length > 0 || 
+          selectedCategoryIds.length > 0,
       };
     }),
 
@@ -73,7 +101,8 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
     return (
       (state.keyword.length > 0 ? 1 : 0) +
       state.selectedStatuses.length +
-      state.selectedTypes.length
+      state.selectedTypes.length +
+      state.selectedCategoryIds.length
     );
   },
 }));

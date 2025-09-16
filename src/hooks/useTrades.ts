@@ -7,6 +7,7 @@ interface TradeFilters {
   status?: TradeStatus | TradeStatus[];
   type?: TradeType | TradeType[];
   keyword?: string;
+  categoryIds?: string[];
 }
 
 export function useTrades(filters?: TradeFilters) {
@@ -31,6 +32,13 @@ export function useTrades(filters?: TradeFilters) {
     const keyword = filters?.keyword?.trim().toLowerCase() ?? '';
     if (keyword.length > 0) {
       filtered = filtered.filter((trade) => trade.item_name.toLowerCase().includes(keyword));
+    }
+
+    if (filters?.categoryIds && filters.categoryIds.length > 0) {
+      filtered = filtered.filter((trade) => {
+        // カテゴリIDがある場合は一致するもの、ない場合は未分類として扱う
+        return filters.categoryIds!.includes(trade.category_id || 'uncategorized');
+      });
     }
 
     return filtered;
