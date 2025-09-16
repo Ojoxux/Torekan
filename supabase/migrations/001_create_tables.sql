@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS trades (
   price INTEGER,
   event_date DATE,
   notes TEXT,
-  is_archived BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -32,7 +31,6 @@ CREATE TABLE IF NOT EXISTS todos (
 CREATE TABLE IF NOT EXISTS settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
-  auto_archive BOOLEAN DEFAULT TRUE,
   default_sort_order TEXT DEFAULT 'created_at' CHECK (default_sort_order IN ('created_at', 'updated_at', 'event_date', 'status')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

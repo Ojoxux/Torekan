@@ -33,7 +33,6 @@ export interface Trade {
   item_id?: string;
   partner_id?: string;
   notes?: string;
-  is_archived: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -52,7 +51,6 @@ export interface Todo {
 export interface Settings {
   id: string;
   user_id: string;
-  auto_archive: boolean;
   default_sort_order: SortOrder;
   created_at: string;
   updated_at: string;
@@ -84,7 +82,6 @@ export interface UpdateTradeInput {
   item_id?: string;
   partner_id?: string;
   notes?: string;
-  is_archived?: boolean;
 }
 
 export interface CreateTodoInput {
@@ -93,6 +90,5 @@ export interface CreateTodoInput {
 }
 
 export interface UpdateSettingsInput {
-  auto_archive?: boolean;
   default_sort_order?: SortOrder;
 }

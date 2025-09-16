@@ -1,4 +1,4 @@
-import { useArchiveTrade, useDeleteTrade, useTrade, useUpdateTrade } from '@/hooks/useTrades';
+import { useDeleteTrade, useTrade, useUpdateTrade } from '@/hooks/useTrades';
 import { TradeStatus, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -26,7 +26,6 @@ export default function TradeDetailScreen() {
   const { data: trade, isLoading } = useTrade(id || '');
   const updateTrade = useUpdateTrade();
   const deleteTrade = useDeleteTrade();
-  const archiveTrade = useArchiveTrade();
 
   const statusOptions: { value: TradeStatus; label: string; color: string }[] = [
     { value: TradeStatus.PLANNED, label: '計画中', color: '#3B82F6' },
@@ -65,17 +64,6 @@ export default function TradeDetailScreen() {
         },
       },
     ]);
-  };
-
-  const handleArchive = async () => {
-    try {
-      await archiveTrade.mutateAsync(id || '');
-      setActionModalVisible(false);
-      router.back();
-    } catch (error) {
-      console.error('Failed to archive trade:', error);
-      Alert.alert('エラー', 'アーカイブに失敗しました。');
-    }
   };
 
   const getCurrentStatus = () => {
@@ -235,13 +223,6 @@ export default function TradeDetailScreen() {
             >
               <Ionicons name='create-outline' size={20} color='#3B82F6' />
               <Text className='text-base text-gray-700'>編集</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className='flex-row items-center py-4 px-4 gap-3'
-              onPress={handleArchive}
-            >
-              <Ionicons name='archive-outline' size={20} color='#6B7280' />
-              <Text className='text-base text-gray-700'>アーカイブ</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className='flex-row items-center py-4 px-4 gap-3 border-t border-gray-200'

@@ -81,14 +81,3 @@ export function useDeleteTrade() {
     },
   });
 }
-
-export function useArchiveTrade() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => tradeService.archive(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['trades'] });
-    },
-  });
-}

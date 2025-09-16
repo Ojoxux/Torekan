@@ -35,13 +35,6 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name='archive'
-          options={{
-            title: 'アーカイブ',
-            tabBarIcon: ({ color, size }) => <Ionicons name='archive' size={size} color={color} />,
-          }}
-        />
-        <Tabs.Screen
           name='settings'
           options={{
             title: '設定',
