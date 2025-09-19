@@ -1,109 +1,13 @@
+import { CategoryModal } from '@/components/ui/CategoryModal';
 import {
-  useCategories,
-  useCreateCategory,
-  useDeleteCategory,
-  useUpdateCategory,
+   useCategories,
+   useCreateCategory,
+   useDeleteCategory,
+   useUpdateCategory,
 } from '@/hooks/useCategories';
-import { categoryService } from '@/services/categoryService';
 import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import {
-  Alert,
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-
-interface CategoryModalProps {
-  visible: boolean;
-  onClose: () => void;
-  title: string;
-  onSubmit: (name: string, color: string) => void;
-  initialName?: string;
-  initialColor?: string;
-}
-
-function CategoryModal({
-  visible,
-  onClose,
-  title,
-  onSubmit,
-  initialName = '',
-  initialColor = '#6B7280',
-}: CategoryModalProps) {
-  const [name, setName] = useState(initialName);
-  const [color, setColor] = useState(initialColor);
-  const presetColors = categoryService.getPresetColors();
-
-  // モーダルが開かれたときに初期値をセット
-  useEffect(() => {
-    if (visible) {
-      setName(initialName);
-      setColor(initialColor);
-    }
-  }, [visible, initialName, initialColor]);
-
-  return (
-    <Modal visible={visible} animationType='slide' transparent>
-      <View className='flex-1 bg-black/50 justify-center p-4'>
-        <View className='bg-white rounded-lg p-6'>
-          <Text className='text-xl font-bold mb-4'>{title}</Text>
-
-          <Text className='text-gray-700 font-medium mb-2'>カテゴリ名</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder='カテゴリ名を入力'
-            className='border border-gray-300 rounded-lg p-3 mb-4'
-          />
-
-          <Text className='text-gray-700 font-medium mb-2'>カラー</Text>
-          <View className='flex-row flex-wrap gap-2 mb-6'>
-            {presetColors.map((presetColor) => (
-              <Pressable
-                key={presetColor}
-                onPress={() => setColor(presetColor)}
-                className={`w-8 h-8 rounded-full border-2 ${
-                  color === presetColor ? 'border-gray-800' : 'border-gray-300'
-                }`}
-                style={{ backgroundColor: presetColor }}
-              />
-            ))}
-          </View>
-
-          <View className='flex-row gap-3'>
-            <Pressable onPress={onClose} className='flex-1 bg-gray-200 rounded-lg p-3'>
-              <Text className='text-gray-800 text-center font-medium'>キャンセル</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                const trimmedName = name.trim();
-                if (trimmedName.length === 0) {
-                  Alert.alert('エラー', 'カテゴリ名を入力してください');
-                  return;
-                }
-                if (trimmedName.length > 32) {
-                  Alert.alert('エラー', 'カテゴリ名は32文字以内で入力してください');
-                  return;
-                }
-                onSubmit(trimmedName, color);
-                setName('');
-                setColor('#6B7280');
-              }}
-              className='flex-1 bg-blue-500 rounded-lg p-3'
-            >
-              <Text className='text-white text-center font-medium'>保存</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
+import { useState } from 'react';
+import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
 
 export default function CategoriesScreen() {
   const { data: categories, isLoading } = useCategories();
@@ -121,20 +25,48 @@ export default function CategoriesScreen() {
   const handleCreateCategory = async (name: string, color: string) => {
     try {
       await createMutation.mutateAsync({ name: name.trim(), color });
-      setIsAddModalVisible(false);
+      // HACK: キーボードアニメーションと同期するため遅延してからモーダルを閉じる
+      setTimeout(() => {
+        setIsAddModalVisible(false);
+      }, 200);
     } catch (error) {
       console.error('Category creation error:', error);
-      Alert.alert('エラー', 'カテゴリの作成に失敗しました');
+      
+      // エラーの種類に応じてメッセージを変更
+      const errorMessage = error && typeof error === 'object' && 'code' in error && error.code === '23505'
+        ? '同じ名前のカテゴリが既に存在します'
+        : 'カテゴリの作成に失敗しました';
+      
+      Alert.alert('エラー', errorMessage);
+      
+      // HACK: エラー時もキーボードアニメーションと同期してモーダルを閉じる
+      setTimeout(() => {
+        setIsAddModalVisible(false);
+      }, 200);
     }
   };
 
   const handleUpdateCategory = async (id: string, name: string, color: string) => {
     try {
       await updateMutation.mutateAsync({ id, updates: { name, color } });
-      setEditingCategory(null);
+      // HACK: キーボードアニメーションと同期するため遅延してからモーダルを閉じる
+      setTimeout(() => {
+        setEditingCategory(null);
+      }, 200);
     } catch (error) {
       console.error('Category update error:', error);
-      Alert.alert('エラー', 'カテゴリの更新に失敗しました');
+      
+      // エラーの種類に応じてメッセージを変更
+      const errorMessage = error && typeof error === 'object' && 'code' in error && error.code === '23505'
+        ? '同じ名前のカテゴリが既に存在します'
+        : 'カテゴリの更新に失敗しました';
+      
+      Alert.alert('エラー', errorMessage);
+      
+      // HACK: エラー時もキーボードアニメーションと同期してモーダルを閉じる
+      setTimeout(() => {
+        setEditingCategory(null);
+      }, 200);
     }
   };
 
@@ -173,7 +105,7 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
       <View className='px-4 py-2 bg-white border-b border-gray-200 flex-row items-center justify-between'>
-        <Link href='/settings' asChild>
+        <Link href='/(tabs)/settings' asChild>
           <Pressable className='p-2'>
             <Text className='text-blue-500 text-lg'>← 戻る</Text>
           </Pressable>
