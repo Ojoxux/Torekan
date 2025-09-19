@@ -13,13 +13,15 @@ import {
 import { FilterChips } from '@/components/common/FilterChips';
 import { SearchBar } from '@/components/common/SearchBar';
 import { useTrades } from '@/hooks/useTrades';
+import { useCategories } from '@/hooks/useCategories';
 import { useFilterStore } from '@/store/filterStore';
 import { Trade, TradeStatus, TradeType } from '@/types';
 
 export default function TradesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const { keyword, selectedStatuses, selectedTypes, setKeyword } = useFilterStore();
+  const { keyword, selectedStatuses, selectedTypes, selectedCategoryIds, setKeyword } = useFilterStore();
+  const { data: categories } = useCategories();
 
   const {
     data: trades = [],
@@ -29,6 +31,7 @@ export default function TradesScreen() {
     status: selectedStatuses.length > 0 ? selectedStatuses : undefined,
     type: selectedTypes.length > 0 ? selectedTypes : undefined,
     keyword: keyword.length > 0 ? keyword : undefined,
+    categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
   });
 
   const activeTrades = trades;
@@ -65,38 +68,53 @@ export default function TradesScreen() {
     }
   };
 
-  const renderTradeItem = ({ item }: { item: Trade }) => (
-    <TouchableOpacity
-      className='bg-white rounded-xl p-4 mb-3 shadow-sm'
-      onPress={() => router.push(`/trade/${item.id}` as Href)}
-      activeOpacity={0.7}
-    >
-      <View className='flex-row justify-between items-start mb-2'>
-        <View className='flex-1 mr-2'>
-          <Text className='text-base font-semibold text-gray-900' numberOfLines={1}>
-            {item.item_name}
-          </Text>
-          <View className='bg-blue-50 px-2 py-0.5 rounded mt-1 self-start'>
-            <Text className='text-xs font-semibold text-gray-700'>
-              {item.type === TradeType.EXCHANGE && '交換'}
-              {item.type === TradeType.TRANSFER && '譲渡'}
-              {item.type === TradeType.PURCHASE && '買取'}
-              {item.type === TradeType.SALE && '売却'}
+  const renderTradeItem = ({ item }: { item: Trade }) => {
+    const category = categories?.find(c => c.id === item.category_id);
+    
+    return (
+      <TouchableOpacity
+        className='bg-white rounded-xl p-4 mb-3 shadow-sm'
+        onPress={() => router.push(`/trade/${item.id}` as Href)}
+        activeOpacity={0.7}
+      >
+        <View className='flex-row justify-between items-start mb-2'>
+          <View className='flex-1 mr-2'>
+            {category && (
+              <View className='flex-row items-center mb-1'>
+                <View
+                  className='w-2 h-2 rounded-full mr-1'
+                  style={{ backgroundColor: category.color }}
+                />
+                <Text className='text-xs text-gray-600'>{category.name}</Text>
+              </View>
+            )}
+            <Text className='text-base font-semibold text-gray-900' numberOfLines={1}>
+              {item.item_name}
             </Text>
+            <View className='bg-blue-50 px-2 py-0.5 rounded mt-1 self-start'>
+              <Text className='text-xs font-semibold text-gray-700'>
+                {item.type === TradeType.EXCHANGE && '交換'}
+                {item.type === TradeType.TRANSFER && '譲渡'}
+                {item.type === TradeType.PURCHASE && '買取'}
+                {item.type === TradeType.SALE && '売却'}
+              </Text>
+            </View>
+          </View>
+          <View className={`px-3 py-1 rounded-full ${getStatusColor(item.status)}`}>
+            <Text className='text-xs font-medium text-white'>{getStatusText(item.status)}</Text>
           </View>
         </View>
-        <View className={`px-3 py-1 rounded-full ${getStatusColor(item.status)}`}>
-          <Text className='text-xs font-medium text-white'>{getStatusText(item.status)}</Text>
-        </View>
-      </View>
-      {item.partner_name && (
-        <Text className='text-sm text-gray-600 mb-1'>取引相手: {item.partner_name}</Text>
-      )}
-      <Text className='text-xs text-gray-400'>
-        作成日: {new Date(item.created_at).toLocaleDateString('ja-JP')}
-      </Text>
-    </TouchableOpacity>
-  );
+        {item.partner_name && (
+          <Text className='text-sm text-gray-600 mb-1'>
+            取引相手: {item.partner_name}
+          </Text>
+        )}
+        <Text className='text-xs text-gray-400'>
+          作成日: {new Date(item.created_at).toLocaleDateString('ja-JP')}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   // 初回ロード時のみフルスクリーンローディングを表示
   if (isLoading && !trades.length) {

@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import { useCategories } from '@/hooks/useCategories';
 import { useFilterStore } from '@/store/filterStore';
 import { TradeStatus, TradeType } from '@/types';
 
 export function FilterChips() {
-  const { keyword, selectedStatuses, selectedTypes, isFilterActive, clearAllFilters } = useFilterStore();
+  const { keyword, selectedStatuses, selectedTypes, selectedCategoryIds, isFilterActive, clearAllFilters, toggleCategory } = useFilterStore();
+  const { data: categories } = useCategories();
 
   const getStatusText = (status: TradeStatus) => {
     switch (status) {
@@ -37,7 +39,7 @@ export function FilterChips() {
     return null;
   }
 
-  const totalFilters = (keyword.length > 0 ? 1 : 0) + selectedStatuses.length + selectedTypes.length;
+  const totalFilters = (keyword.length > 0 ? 1 : 0) + selectedStatuses.length + selectedTypes.length + selectedCategoryIds.length;
 
   return (
     <View className='mt-2'>
@@ -75,6 +77,44 @@ export function FilterChips() {
             </Text>
           </View>
         ))}
+
+        {selectedCategoryIds.map((categoryId) => {
+          if (categoryId === 'uncategorized') {
+            return (
+              <TouchableOpacity
+                key={categoryId}
+                onPress={() => toggleCategory(categoryId)}
+                className='bg-gray-100 px-3 py-1 rounded-full mr-2 flex-row items-center'
+                activeOpacity={0.7}
+              >
+                <Text className='text-xs font-medium text-gray-700'>未分類</Text>
+                <Ionicons name='close' size={12} color='#6B7280' style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
+            );
+          }
+
+          const category = categories?.find(c => c.id === categoryId);
+          if (!category) return null;
+
+          return (
+            <TouchableOpacity
+              key={categoryId}
+              onPress={() => toggleCategory(categoryId)}
+              className='px-3 py-1 rounded-full mr-2 flex-row items-center'
+              style={{ backgroundColor: category.color + '20' }}
+              activeOpacity={0.7}
+            >
+              <View
+                className='w-2 h-2 rounded-full mr-1'
+                style={{ backgroundColor: category.color }}
+              />
+              <Text className='text-xs font-medium' style={{ color: category.color }}>
+                {category.name}
+              </Text>
+              <Ionicons name='close' size={12} color={category.color} style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );

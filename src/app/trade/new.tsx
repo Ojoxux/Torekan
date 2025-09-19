@@ -1,4 +1,5 @@
 import { useCreateTrade } from '@/hooks/useTrades';
+import { useCategories } from '@/hooks/useCategories';
 import { TradeStatus, TradeType, PaymentMethod } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -6,7 +7,9 @@ import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   SafeAreaView,
   ScrollView,
   Text,
@@ -21,6 +24,7 @@ import {
 export default function NewTradeScreen() {
   const router = useRouter();
   const createTrade = useCreateTrade();
+  const { data: categories } = useCategories();
 
   const [formData, setFormData] = useState({
     item_name: '',
@@ -28,7 +32,10 @@ export default function NewTradeScreen() {
     partner_name: '',
     payment_method: undefined as PaymentMethod | undefined,
     notes: '',
+    category_id: undefined as string | undefined,
   });
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const handleSubmit = async () => {
     if (!formData.item_name.trim()) {
@@ -48,6 +55,7 @@ export default function NewTradeScreen() {
         status: TradeStatus.PLANNED,
         payment_method: formData.payment_method,
         notes: formData.notes.trim() || undefined,
+        category_id: formData.category_id || undefined,
       };
 
       await createTrade.mutateAsync(tradeData);
@@ -156,6 +164,38 @@ export default function NewTradeScreen() {
           )}
 
           <View className='mb-5'>
+            <Text className='text-base font-medium text-gray-700 mb-2'>カテゴリ</Text>
+            <Pressable
+              onPress={() => setShowCategoryModal(true)}
+              className='bg-white rounded-lg px-3 py-3 border border-gray-300 flex-row items-center justify-between'
+            >
+              <View className='flex-row items-center flex-1'>
+                {formData.category_id && categories ? (
+                  <>
+                    {(() => {
+                      const selectedCategory = categories.find(c => c.id === formData.category_id);
+                      return selectedCategory ? (
+                        <>
+                          <View
+                            className='w-4 h-4 rounded-full mr-3'
+                            style={{ backgroundColor: selectedCategory.color }}
+                          />
+                          <Text className='text-base text-gray-900'>{selectedCategory.name}</Text>
+                        </>
+                      ) : (
+                        <Text className='text-base text-gray-500'>カテゴリを選択</Text>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <Text className='text-base text-gray-500'>カテゴリを選択（任意）</Text>
+                )}
+              </View>
+              <Ionicons name='chevron-down' size={20} color='#9CA3AF' />
+            </Pressable>
+          </View>
+
+          <View className='mb-5'>
             <Text className='text-base font-medium text-gray-700 mb-2'>支払い方法</Text>
             <View className='flex-row flex-wrap gap-2'>
               {[
@@ -203,6 +243,76 @@ export default function NewTradeScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* カテゴリ選択モーダル */}
+      <Modal visible={showCategoryModal} animationType="slide" transparent>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-xl p-4 max-h-96">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-xl font-bold">カテゴリを選択</Text>
+              <Pressable onPress={() => setShowCategoryModal(false)}>
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Pressable
+                onPress={() => {
+                  setFormData({ ...formData, category_id: undefined });
+                  setShowCategoryModal(false);
+                }}
+                className={`p-3 rounded-lg mb-2 ${
+                  !formData.category_id ? 'bg-blue-50' : 'bg-gray-50'
+                }`}
+              >
+                <Text
+                  className={`font-medium ${
+                    !formData.category_id ? 'text-blue-600' : 'text-gray-700'
+                  }`}
+                >
+                  カテゴリなし
+                </Text>
+              </Pressable>
+
+              {categories?.map((category) => (
+                <Pressable
+                  key={category.id}
+                  onPress={() => {
+                    setFormData({ ...formData, category_id: category.id });
+                    setShowCategoryModal(false);
+                  }}
+                  className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                    formData.category_id === category.id ? 'bg-blue-50' : 'bg-gray-50'
+                  }`}
+                >
+                  <View
+                    className="w-4 h-4 rounded-full mr-3"
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <Text
+                    className={`font-medium ${
+                      formData.category_id === category.id ? 'text-blue-600' : 'text-gray-700'
+                    }`}
+                  >
+                    {category.name}
+                  </Text>
+                </Pressable>
+              ))}
+
+              {(!categories || categories.length === 0) && (
+                <View className="p-8 items-center">
+                  <Text className="text-gray-500 text-center mb-4">
+                    カテゴリがまだ作成されていません
+                  </Text>
+                  <Text className="text-sm text-gray-400 text-center">
+                    設定画面からカテゴリを追加してください
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
