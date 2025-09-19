@@ -1,19 +1,22 @@
+import { useCategories } from '@/hooks/useCategories';
 import { useTrade, useUpdateTrade } from '@/hooks/useTrades';
-import { TradeType, PaymentMethod } from '@/types';
+import { PaymentMethod, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+   ActivityIndicator,
+   Alert,
+   KeyboardAvoidingView,
+   Platform,
+   Pressable,
+   SafeAreaView,
+   ScrollView,
+   Text,
+   TextInput,
+   TouchableOpacity,
+   View,
 } from 'react-native';
 
 /*
@@ -23,6 +26,7 @@ export default function EditTradeScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: trade, isLoading } = useTrade(id || '');
+  const { data: categories } = useCategories();
   const updateTrade = useUpdateTrade();
 
   const [formData, setFormData] = useState({
@@ -31,7 +35,36 @@ export default function EditTradeScreen() {
     partner_name: '',
     payment_method: undefined as PaymentMethod | undefined,
     notes: '',
+    category_id: undefined as string | undefined,
   });
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const categoryBottomSheetRef = useRef<BottomSheetModal>(null);
+
+  // BottomSheetのスナップポイントを定義
+  const categorySnapPoints = useMemo(() => ['50%', '75%'], []);
+
+  // BottomSheetModalの表示制御
+  useEffect(() => {
+    if (showCategoryModal) {
+      categoryBottomSheetRef.current?.present();
+    } else {
+      categoryBottomSheetRef.current?.dismiss();
+    }
+  }, [showCategoryModal]);
+
+  // BottomSheetModalが閉じられたときのコールバック
+  const handleCategorySheetDismiss = useCallback(() => {
+    setShowCategoryModal(false);
+  }, []);
+
+  // 背景コンポーネントをレンダリング
+  const renderCategoryBackdrop = useCallback(
+    (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
+    ),
+    []
+  );
 
   useEffect(() => {
     if (trade) {
@@ -41,6 +74,7 @@ export default function EditTradeScreen() {
         partner_name: trade.partner_name || '',
         payment_method: trade.payment_method,
         notes: trade.notes || '',
+        category_id: trade.category_id || undefined,
       });
     }
   }, [trade]);
@@ -62,6 +96,7 @@ export default function EditTradeScreen() {
         type: formData.type,
         payment_method: formData.payment_method,
         notes: formData.notes.trim() || undefined,
+        category_id: formData.category_id || undefined,
       };
 
       await updateTrade.mutateAsync({
@@ -195,6 +230,40 @@ export default function EditTradeScreen() {
           )}
 
           <View className='mb-5'>
+            <Text className='text-base font-medium text-gray-700 mb-2'>カテゴリ</Text>
+            <Pressable
+              onPress={() => setShowCategoryModal(true)}
+              className='bg-white rounded-lg px-3 py-3 border border-gray-300 flex-row items-center justify-between'
+            >
+              <View className='flex-row items-center flex-1'>
+                {formData.category_id && categories ? (
+                  <>
+                    {(() => {
+                      const selectedCategory = categories.find(
+                        (c) => c.id === formData.category_id
+                      );
+                      return selectedCategory ? (
+                        <>
+                          <View
+                            className='w-4 h-4 rounded-full mr-3'
+                            style={{ backgroundColor: selectedCategory.color }}
+                          />
+                          <Text className='text-base text-gray-900'>{selectedCategory.name}</Text>
+                        </>
+                      ) : (
+                        <Text className='text-base text-gray-500'>カテゴリを選択</Text>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <Text className='text-base text-gray-500'>カテゴリを選択（任意）</Text>
+                )}
+              </View>
+              <Ionicons name='chevron-down' size={20} color='#9CA3AF' />
+            </Pressable>
+          </View>
+
+          <View className='mb-5'>
             <Text className='text-base font-medium text-gray-700 mb-2'>支払い方法</Text>
             <View className='flex-row flex-wrap gap-2'>
               {[
@@ -212,10 +281,11 @@ export default function EditTradeScreen() {
                       ? 'bg-blue-500 border-blue-500'
                       : 'bg-white border-gray-300'
                   }`}
-                  onPress={() => 
-                    setFormData({ 
-                      ...formData, 
-                      payment_method: formData.payment_method === option.value ? undefined : option.value 
+                  onPress={() =>
+                    setFormData({
+                      ...formData,
+                      payment_method:
+                        formData.payment_method === option.value ? undefined : option.value,
                     })
                   }
                 >
@@ -242,6 +312,82 @@ export default function EditTradeScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* カテゴリ選択 */}
+      <BottomSheetModal
+        ref={categoryBottomSheetRef}
+        snapPoints={categorySnapPoints}
+        onDismiss={handleCategorySheetDismiss}
+        backdropComponent={renderCategoryBackdrop}
+        enablePanDownToClose
+      >
+        <BottomSheetView className='flex-1'>
+          <View className='p-4'>
+            <View className='flex-row items-center justify-between mb-4'>
+              <Text className='text-xl font-bold'>カテゴリを選択</Text>
+              <Pressable onPress={() => setShowCategoryModal(false)}>
+                <Ionicons name='close' size={24} color='#6B7280' />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Pressable
+                onPress={() => {
+                  setFormData({ ...formData, category_id: undefined });
+                  setShowCategoryModal(false);
+                }}
+                className={`p-3 rounded-lg mb-2 ${
+                  !formData.category_id ? 'bg-blue-50' : 'bg-gray-50'
+                }`}
+              >
+                <Text
+                  className={`font-medium ${
+                    !formData.category_id ? 'text-blue-600' : 'text-gray-700'
+                  }`}
+                >
+                  カテゴリなし
+                </Text>
+              </Pressable>
+
+              {categories?.map((category) => (
+                <Pressable
+                  key={category.id}
+                  onPress={() => {
+                    setFormData({ ...formData, category_id: category.id });
+                    setShowCategoryModal(false);
+                  }}
+                  className={`flex-row items-center p-3 rounded-lg mb-2 ${
+                    formData.category_id === category.id ? 'bg-blue-50' : 'bg-gray-50'
+                  }`}
+                >
+                  <View
+                    className='w-4 h-4 rounded-full mr-3'
+                    style={{ backgroundColor: category.color }}
+                  />
+                  <Text
+                    className={`font-medium ${
+                      formData.category_id === category.id ? 'text-blue-600' : 'text-gray-700'
+                    }`}
+                  >
+                    {category.name}
+                  </Text>
+                </Pressable>
+              ))}
+
+              {(!categories || categories.length === 0) && (
+                <View className='p-8 items-center'>
+                  <Text className='text-gray-500 text-center mb-4'>
+                    カテゴリがまだ作成されていません
+                  </Text>
+                  <Text className='text-sm text-gray-400 text-center'>
+                    設定画面からカテゴリを追加してください
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </SafeAreaView>
   );
 }
