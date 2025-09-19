@@ -1,3 +1,4 @@
+import { useCategories } from '@/hooks/useCategories';
 import { useDeleteTrade, useTrade, useUpdateTrade } from '@/hooks/useTrades';
 import { TradeStatus, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +25,7 @@ export default function TradeDetailScreen() {
   const [actionModalVisible, setActionModalVisible] = useState(false);
 
   const { data: trade, isLoading } = useTrade(id || '');
+  const { data: categories } = useCategories();
   const updateTrade = useUpdateTrade();
   const deleteTrade = useDeleteTrade();
 
@@ -70,6 +72,11 @@ export default function TradeDetailScreen() {
     return statusOptions.find((option) => option.value === trade?.status);
   };
 
+  const getCurrentCategory = () => {
+    if (!trade?.category_id || !categories) return null;
+    return categories.find((category) => category.id === trade.category_id);
+  };
+
   if (isLoading) {
     return (
       <View className='flex-1 justify-center items-center bg-gray-50'>
@@ -93,6 +100,7 @@ export default function TradeDetailScreen() {
   }
 
   const currentStatus = getCurrentStatus();
+  const currentCategory = getCurrentCategory();
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
@@ -187,6 +195,17 @@ export default function TradeDetailScreen() {
             </Text>
           </View>
         )}
+
+        <View className='bg-white rounded-xl p-4 mb-4'>
+          <Text className='text-sm font-medium text-gray-600 mb-2'>カテゴリ</Text>
+          <View className='flex-row items-center'>
+            <View
+              className='w-4 h-4 rounded-full mr-2'
+              style={{ backgroundColor: currentCategory?.color }}
+            />
+            <Text className='text-base text-gray-900'>{currentCategory?.name}</Text>
+          </View>
+        </View>
 
         {trade.notes && (
           <View className='bg-white rounded-xl p-4 mb-4'>
