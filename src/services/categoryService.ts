@@ -8,7 +8,7 @@ export const categoryService = {
       .select('*')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true });
-    
+
     if (error) throw error;
     return data || [];
   },
@@ -25,22 +25,25 @@ export const categoryService = {
   },
 
   async create(category: CreateCategoryInput): Promise<GoodsCategory> {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     // 新しいカテゴリの表示順を設定（最後に追加）
-    let sortOrder = category.sort_order;
-    if (sortOrder === undefined) {
-      const { data: lastCategory } = await supabase
-        .from('goods_categories')
-        .select('sort_order')
-        .eq('user_id', user.id)
-        .order('sort_order', { ascending: false })
-        .limit(1)
-        .single();
-      
-      sortOrder = (lastCategory?.sort_order ?? -1) + 1;
-    }
+    const sortOrder =
+      category.sort_order ??
+      (await (async () => {
+        const { data: lastCategory } = await supabase
+          .from('goods_categories')
+          .select('sort_order')
+          .eq('user_id', user.id)
+          .order('sort_order', { ascending: false })
+          .limit(1)
+          .single();
+
+        return (lastCategory?.sort_order ?? -1) + 1;
+      })());
 
     const { data, error } = await supabase
       .from('goods_categories')
@@ -78,10 +81,7 @@ export const categoryService = {
 
     if (tradesError) throw tradesError;
 
-    const { error } = await supabase
-      .from('goods_categories')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('goods_categories').delete().eq('id', id);
 
     if (error) throw error;
 
@@ -91,8 +91,12 @@ export const categoryService = {
     };
   },
 
-  async updateSortOrder(categories: { id: string; sort_order: number }[]): Promise<GoodsCategory[]> {
-    const { data: { user } } = await supabase.auth.getUser();
+  async updateSortOrder(
+    categories: { id: string; sort_order: number }[]
+  ): Promise<GoodsCategory[]> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     // バッチ更新処理
@@ -123,10 +127,10 @@ export const categoryService = {
   },
 
   // プリセットカラー一覧
-  getPresetColors(): string[] {
+  getPresetColors() {
     return [
       '#EF4444', // Red
-      '#F97316', // Orange  
+      '#F97316', // Orange
       '#EAB308', // Yellow
       '#22C55E', // Green
       '#06B6D4', // Cyan
