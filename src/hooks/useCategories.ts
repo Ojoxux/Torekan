@@ -41,6 +41,14 @@ export function useUpdateCategory() {
   });
 }
 
+export function useCategoryDeleteImpact(id: string) {
+  return useQuery({
+    queryKey: ['category-delete-impact', id],
+    queryFn: () => categoryService.getDeleteImpact(id),
+    enabled: !!id,
+  });
+}
+
 export function useDeleteCategory() {
   const queryClient = useQueryClient();
 
@@ -48,6 +56,7 @@ export function useDeleteCategory() {
     mutationFn: (id: string) => categoryService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['goods-items'] });
       queryClient.invalidateQueries({ queryKey: ['trades'] });
     },
   });
@@ -69,6 +78,23 @@ export function useCategoryUsageCount(categoryId: string) {
   return useQuery({
     queryKey: ['categories', categoryId, 'usage'],
     queryFn: () => categoryService.getUsageCount(categoryId),
+    enabled: !!categoryId,
+  });
+}
+
+// 統計情報取得
+export function useCategoryStatistics() {
+  return useQuery({
+    queryKey: ['categories', 'statistics'],
+    queryFn: () => categoryService.getStatistics(),
+  });
+}
+
+// カテゴリ詳細統計
+export function useCategoryStats(categoryId: string) {
+  return useQuery({
+    queryKey: ['categories', categoryId, 'detailed-stats'],
+    queryFn: () => categoryService.getCategoryStats(categoryId),
     enabled: !!categoryId,
   });
 }
