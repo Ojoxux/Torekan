@@ -2,11 +2,12 @@ export enum TradeType {
   EXCHANGE = 'exchange',
   TRANSFER = 'transfer',
   PURCHASE = 'purchase',
-  SALE = 'sale',
 }
 
 export enum TradeStatus {
   PLANNED = 'planned',
+  NEGOTIATING = 'negotiating',
+  CONFIRMED = 'confirmed',
   SHIPPED = 'shipped',
   COMPLETED = 'completed',
   CANCELED = 'canceled',
@@ -24,16 +25,15 @@ export type SortOrder = 'created_at' | 'updated_at' | 'status';
 
 export interface Trade {
   id: string;
+  goods_item_id: string;
   user_id: string;
-  item_name: string;
   partner_name: string;
+  item_name: string;
   type: TradeType;
   status: TradeStatus;
   payment_method?: PaymentMethod;
-  item_id?: string;
-  partner_id?: string;
-  notes?: string;
-  category_id?: string;
+  notes?: string | null;
+  shipping_deadline?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -43,6 +43,18 @@ export interface GoodsCategory {
   user_id: string;
   name: string;
   color: string;
+  icon: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoodsItem {
+  id: string;
+  category_id: string;
+  user_id: string;
+  name: string;
+  description?: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -51,19 +63,17 @@ export interface GoodsCategory {
 export interface Todo {
   id: string;
   trade_id: string;
-  user_id: string;
-  content: string;
-  is_completed: boolean;
-  display_order: number;
+  title: string;
+  is_done: boolean;
+  sort_order: number;
   created_at: string;
-  updated_at: string;
 }
 
 export interface Settings {
-  id: string;
   user_id: string;
-  default_sort_order: SortOrder;
-  created_at: string;
+  allow_cloud_backup: boolean;
+  is_passcode_lock_enabled: boolean;
+  default_sort_order: string;
   updated_at: string;
 }
 
@@ -74,46 +84,96 @@ export interface User {
 }
 
 export interface CreateTradeInput {
-  item_name: string;
+  goods_item_id: string;
   partner_name: string;
+  item_name: string;
   type: TradeType;
   status?: TradeStatus;
-  payment_method?: PaymentMethod;
-  item_id?: string;
-  partner_id?: string;
-  notes?: string;
-  category_id?: string;
+  payment_method?: PaymentMethod | null;
+  notes?: string | null;
+  shipping_deadline?: string | null;
 }
 
 export interface UpdateTradeInput {
-  item_name?: string;
+  goods_item_id?: string;
   partner_name?: string;
+  item_name?: string;
   type?: TradeType;
   status?: TradeStatus;
-  payment_method?: PaymentMethod;
-  item_id?: string;
-  partner_id?: string;
-  notes?: string;
-  category_id?: string;
+  payment_method?: PaymentMethod | null;
+  notes?: string | null;
+  shipping_deadline?: string | null;
 }
 
 export interface CreateCategoryInput {
   name: string;
   color?: string;
+  icon?: string;
   sort_order?: number;
 }
 
 export interface UpdateCategoryInput {
   name?: string;
   color?: string;
+  icon?: string;
+  sort_order?: number;
+}
+
+export interface CreateGoodsItemInput {
+  category_id: string;
+  name: string;
+  description?: string;
+  sort_order?: number;
+}
+
+export interface UpdateGoodsItemInput {
+  category_id?: string;
+  name?: string;
+  description?: string;
   sort_order?: number;
 }
 
 export interface CreateTodoInput {
-  content: string;
-  display_order: number;
+  trade_id: string;
+  title: string;
+  sort_order?: number;
+}
+
+export interface UpdateTodoInput {
+  title?: string;
+  is_done?: boolean;
+  sort_order?: number;
 }
 
 export interface UpdateSettingsInput {
-  default_sort_order?: SortOrder;
+  allow_cloud_backup?: boolean;
+  is_passcode_lock_enabled?: boolean;
+  default_sort_order?: string;
+}
+
+// 統計情報用の型
+export interface GoodsStatistics {
+  category_id: string;
+  category_name: string;
+  category_color: string;
+  category_icon: string;
+  goods_count: number;
+  total_trades: number;
+  active_trades: number;
+  completed_trades: number;
+  canceled_trades: number;
+}
+
+// 3階層の関連データを含む拡張型
+export interface TradeWithGoods extends Trade {
+  goods_item: GoodsItemWithCategory;
+}
+
+export interface GoodsItemWithCategory extends GoodsItem {
+  category: GoodsCategory;
+}
+
+export interface GoodsItemWithTrades extends GoodsItem {
+  trades: Trade[];
+  category: GoodsCategory;
 }

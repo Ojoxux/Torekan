@@ -1,44 +1,55 @@
 import * as v from 'valibot';
 import { PaymentMethod, TradeStatus, TradeType } from '../types';
 
-// 取引のバリデーションスキーマ
-export const tradeSchema = v.object({
-  item_name: v.pipe(
-    v.string(),
-    v.minLength(1, 'アイテム名は必須です'),
-    v.maxLength(128, 'アイテム名は128文字以内で入力してください')
-  ),
-  partner_name: v.pipe(
-    v.string(),
-    v.minLength(1, '取引相手名は必須です'),
-    v.maxLength(64, '取引相手名は64文字以内で入力してください')
-  ),
-  type: v.enum(TradeType, '取引種別を選択してください'),
-  status: v.optional(v.enum(TradeStatus), TradeStatus.PLANNED),
-  payment_method: v.optional(v.nullable(v.enum(PaymentMethod))),
-  item_id: v.optional(v.nullable(v.string())),
-  partner_id: v.optional(v.nullable(v.string())),
-  notes: v.optional(
-    v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
-  ),
-  category_id: v.optional(v.nullable(v.string())),
-});
-
 // カテゴリのバリデーションスキーマ
 export const categorySchema = v.object({
   name: v.pipe(
     v.string(),
     v.minLength(1, 'カテゴリ名は必須です'),
-    v.maxLength(32, 'カテゴリ名は32文字以内で入力してください')
+    v.maxLength(64, 'カテゴリ名は64文字以内で入力してください')
   ),
   color: v.optional(
-    v.pipe(
-      v.string(),
-      v.regex(/^#[0-9A-Fa-f]{6}$/, '有効なカラーコードを入力してください')
-    ),
+    v.pipe(v.string(), v.regex(/^#[0-9A-Fa-f]{6}$/, '有効なカラーコードを入力してください')),
     '#6B7280'
   ),
+  icon: v.optional(v.string(), 'folder'),
   sort_order: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 0),
+});
+
+// グッズアイテムのバリデーションスキーマ
+export const goodsItemSchema = v.object({
+  category_id: v.pipe(v.string(), v.minLength(1, 'カテゴリは必須です')),
+  name: v.pipe(
+    v.string(),
+    v.minLength(1, 'グッズ名は必須です'),
+    v.maxLength(128, 'グッズ名は128文字以内で入力してください')
+  ),
+  description: v.optional(
+    v.pipe(v.string(), v.maxLength(500, '説明は500文字以内で入力してください'))
+  ),
+  sort_order: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 0),
+});
+
+// 取引のバリデーションスキーマ（3階層構造対応）
+export const tradeSchema = v.object({
+  goods_item_id: v.pipe(v.string(), v.minLength(1, 'グッズアイテムは必須です')),
+  partner_name: v.pipe(
+    v.string(),
+    v.minLength(1, '取引相手名は必須です'),
+    v.maxLength(64, '取引相手名は64文字以内で入力してください')
+  ),
+  item_name: v.pipe(
+    v.string(),
+    v.minLength(1, 'アイテム名は必須です'),
+    v.maxLength(128, 'アイテム名は128文字以内で入力してください')
+  ),
+  type: v.enum(TradeType, '取引種別を選択してください'),
+  status: v.optional(v.enum(TradeStatus), TradeStatus.PLANNED),
+  payment_method: v.optional(v.union([v.enum(PaymentMethod), v.null()])),
+  notes: v.optional(
+    v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
+  ),
+  shipping_deadline: v.optional(v.nullable(v.string())),
 });
 
 // ToDoのバリデーションスキーマ
@@ -58,23 +69,30 @@ export const settingsSchema = v.object({
   is_passcode_lock_enabled: v.optional(v.boolean(), false),
 });
 
-// フォーム用の型エクスポート
-export type TradeFormInput = v.InferInput<typeof tradeSchema>;
+// カテゴリ関連のスキーマとフォーム型
+export const createCategorySchema = categorySchema;
+export const updateCategorySchema = v.partial(categorySchema);
 
-// 取引作成用のスキーマ
+export type CategoryFormInput = v.InferInput<typeof categorySchema>;
+export type CreateCategoryFormInput = v.InferInput<typeof createCategorySchema>;
+export type UpdateCategoryFormInput = v.InferInput<typeof updateCategorySchema>;
+
+// グッズアイテム関連のスキーマとフォーム型
+export const createGoodsItemSchema = goodsItemSchema;
+export const updateGoodsItemSchema = v.partial(goodsItemSchema);
+
+export type GoodsItemFormInput = v.InferInput<typeof goodsItemSchema>;
+export type CreateGoodsItemFormInput = v.InferInput<typeof createGoodsItemSchema>;
+export type UpdateGoodsItemFormInput = v.InferInput<typeof updateGoodsItemSchema>;
+
+// 取引関連のスキーマとフォーム型
 export const createTradeSchema = tradeSchema;
-export type CreateTradeFormInput = v.InferInput<typeof createTradeSchema>;
+export const updateTradeSchema = v.partial(v.omit(tradeSchema, ['goods_item_id']));
 
-// 取引更新用のスキーマ（全フィールドをオプショナルに）
-export const updateTradeSchema = v.partial(tradeSchema);
+export type TradeFormInput = v.InferInput<typeof tradeSchema>;
+export type CreateTradeFormInput = v.InferInput<typeof createTradeSchema>;
 export type UpdateTradeFormInput = v.InferInput<typeof updateTradeSchema>;
+
+// その他のフォーム型
 export type TodoFormInput = v.InferInput<typeof todoSchema>;
 export type SettingsFormInput = v.InferInput<typeof settingsSchema>;
-
-// カテゴリ作成用のスキーマ
-export const createCategorySchema = categorySchema;
-export type CreateCategoryFormInput = v.InferInput<typeof createCategorySchema>;
-
-// カテゴリ更新用のスキーマ
-export const updateCategorySchema = v.partial(categorySchema);
-export type UpdateCategoryFormInput = v.InferInput<typeof updateCategorySchema>;
