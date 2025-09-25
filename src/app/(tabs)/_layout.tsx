@@ -50,7 +50,7 @@ export default function TabLayout() {
           }}
         />
         {/* 非タブ画面はタブバーに表示しない */}
-        {/* TODO: デバッグ用でパスを出すようにしている */}
+        {/* デバッグ用でパスを出すようにしている */}
         <Tabs.Screen name='trade/new' options={{ href: null, headerShown: false }} />
         <Tabs.Screen name='trade/[id]' options={{ href: null, headerShown: false }} />
         <Tabs.Screen name='trade/edit/[id]' options={{ href: null, headerShown: false }} />
