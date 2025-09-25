@@ -1,23 +1,17 @@
 /*
  * 取引タイプ
- * TODO: 購入じゃなくて、買取にしたい
  */
 export enum TradeType {
   EXCHANGE = 'exchange', // 交換
   TRANSFER = 'transfer', // 譲渡
-  PURCHASE = 'purchase', // 購入
+  PURCHASE = 'purchase', // 買取
 }
 
 /*
  * 取引ステータス
- * TODO: ステータスは進行中、完了、キャンセルにしたい
- * あと、その他にするとかだけでいい
  */
 export enum TradeStatus {
-  PLANNED = 'planned', // 計画中
-  NEGOTIATING = 'negotiating', // 交渉中
-  CONFIRMED = 'confirmed', // 確定済み
-  SHIPPED = 'shipped', // 発送済み
+  IN_PROGRESS = 'in_progress', // 進行中
   COMPLETED = 'completed', // 完了
   CANCELED = 'canceled', // キャンセル
 }
@@ -75,7 +69,6 @@ export type SortOrder = 'created_at' | 'updated_at' | 'status';
 
 /*
  * 取引データの型
- * TODO: 個数を入れたい
  */
 export interface Trade {
   id: string;
@@ -83,6 +76,7 @@ export interface Trade {
   user_id: string;
   partner_name: string;
   item_name: string;
+  quantity: number;
   type: TradeType;
   status: TradeStatus;
   payment_method?: PaymentMethod;
@@ -108,14 +102,13 @@ export interface GoodsCategory {
 
 /*
  * グッズアイテムデータの型
- * TODO: グッズアイテムの説明はいらなくて、発売日を入れたい
  */
 export interface GoodsItem {
   id: string;
   category_id: string;
   user_id: string;
   name: string;
-  description?: string;
+  release_date?: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
@@ -160,6 +153,7 @@ export interface CreateTradeInput {
   goods_item_id: string;
   partner_name: string;
   item_name: string;
+  quantity: number;
   type: TradeType;
   status?: TradeStatus;
   payment_method?: PaymentMethod | null;
@@ -174,6 +168,7 @@ export interface UpdateTradeInput {
   goods_item_id?: string;
   partner_name?: string;
   item_name?: string;
+  quantity?: number;
   type?: TradeType;
   status?: TradeStatus;
   payment_method?: PaymentMethod | null;
@@ -207,7 +202,7 @@ export interface UpdateCategoryInput {
 export interface CreateGoodsItemInput {
   category_id: string;
   name: string;
-  description?: string;
+  release_date?: string;
   sort_order?: number;
 }
 
@@ -217,7 +212,7 @@ export interface CreateGoodsItemInput {
 export interface UpdateGoodsItemInput {
   category_id?: string;
   name?: string;
-  description?: string;
+  release_date?: string;
   sort_order?: number;
 }
 
