@@ -42,4 +42,4 @@ app-example
 # Serena project configuration
 .serena/
 
-requirements/
+# requirements/
