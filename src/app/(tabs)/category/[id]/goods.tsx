@@ -136,8 +136,8 @@ export default function GoodsListScreen() {
     const query = searchQuery.toLowerCase().trim();
     return goodsItems.filter((goods) => {
       const nameMatch = goods.name?.toLowerCase().includes(query) || false;
-      const descriptionMatch = goods.description?.toLowerCase().includes(query) || false;
-      return nameMatch || descriptionMatch;
+      const releaseDateMatch = goods.release_date?.toLowerCase().includes(query) || false;
+      return nameMatch || releaseDateMatch;
     });
   }, [goodsItems, searchQuery]);
 
@@ -169,13 +169,13 @@ export default function GoodsListScreen() {
                 {item.name}
               </Text>
 
-              {item.description && (
+              {item.release_date && (
                 <Text
                   className='text-sm text-gray-600 mb-2'
                   style={{ fontSize: 14, color: '#4B5563' }}
-                  numberOfLines={2}
+                  numberOfLines={1}
                 >
-                  {item.description}
+                  発売日: {new Date(item.release_date).toLocaleDateString('ja-JP')}
                 </Text>
               )}
 
