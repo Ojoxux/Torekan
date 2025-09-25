@@ -1,5 +1,4 @@
-import { useCategories } from '@/hooks/useCategories';
-import { useDeleteTrade, useTrade, useUpdateTrade } from '@/hooks/useTrades';
+import { useDeleteTrade, useTrade, useUpdateTradeStatus } from '@/hooks/useTrades';
 import { TradeStatus, TradeType } from '@/types';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,7 +15,7 @@ import {
 } from 'react-native';
 
 /*
- * 取引詳細画面のページコンポーネント
+ * 取引詳細画面
  */
 export default function TradeDetailScreen() {
   const router = useRouter();
@@ -25,22 +24,20 @@ export default function TradeDetailScreen() {
   const [actionModalVisible, setActionModalVisible] = useState(false);
 
   const { data: trade, isLoading } = useTrade(id || '');
-  const { data: categories } = useCategories();
-  const updateTrade = useUpdateTrade();
+  const updateTradeStatus = useUpdateTradeStatus();
   const deleteTrade = useDeleteTrade();
 
   const statusOptions: { value: TradeStatus; label: string; color: string }[] = [
-    { value: TradeStatus.PLANNED, label: '計画中', color: '#3B82F6' },
-    { value: TradeStatus.SHIPPED, label: '発送済み', color: '#10B981' },
-    { value: TradeStatus.COMPLETED, label: '完了', color: '#6B7280' },
+    { value: TradeStatus.IN_PROGRESS, label: '進行中', color: '#3B82F6' },
+    { value: TradeStatus.COMPLETED, label: '完了', color: '#10B981' },
     { value: TradeStatus.CANCELED, label: 'キャンセル', color: '#EF4444' },
   ];
 
   const handleStatusChange = async (newStatus: TradeStatus) => {
     try {
-      await updateTrade.mutateAsync({
+      await updateTradeStatus.mutateAsync({
         id: id || '',
-        trade: { status: newStatus },
+        status: newStatus,
       });
       setStatusDropdownVisible(false);
     } catch (error) {
@@ -58,7 +55,7 @@ export default function TradeDetailScreen() {
         onPress: async () => {
           try {
             await deleteTrade.mutateAsync(id || '');
-            router.back();
+            router.push(`/goods/${trade?.goods_item_id}/trades`);
           } catch (error) {
             console.error('Failed to delete trade:', error);
             Alert.alert('エラー', '取引の削除に失敗しました。');
@@ -73,8 +70,7 @@ export default function TradeDetailScreen() {
   };
 
   const getCurrentCategory = () => {
-    if (!trade?.category_id || !categories) return null;
-    return categories.find((category) => category.id === trade.category_id);
+    return trade?.goods_item?.category || null;
   };
 
   if (isLoading) {
@@ -91,21 +87,23 @@ export default function TradeDetailScreen() {
         <Text className='text-lg text-gray-600 mb-5'>取引が見つかりません</Text>
         <TouchableOpacity
           className='px-6 py-3 bg-blue-500 rounded-lg'
-          onPress={() => router.back()}
+          onPress={() => router.push('/')}
         >
-          <Text className='text-white text-base font-medium'>戻る</Text>
+          <Text className='text-white text-base font-medium'>ホームへ戻る</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   const currentStatus = getCurrentStatus();
-  const currentCategory = getCurrentCategory();
 
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
       <View className='flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200'>
-        <TouchableOpacity className='p-2' onPress={() => router.back()}>
+        <TouchableOpacity
+          className='p-2'
+          onPress={() => router.push(`/goods/${trade.goods_item_id}/trades`)}
+        >
           <Ionicons name='arrow-back' size={24} color='#111827' />
         </TouchableOpacity>
         <Text className='text-lg font-semibold text-gray-900'>取引詳細</Text>
@@ -115,17 +113,64 @@ export default function TradeDetailScreen() {
       </View>
 
       <ScrollView className='flex-1 p-4'>
+        {/* パンくずナビゲーション */}
         <View className='bg-white rounded-xl p-4 mb-4'>
-          <View className='flex-row justify-between items-start mb-3'>
-            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>
+          <View className='flex-row items-center mb-3'>
+            <Text className='text-sm text-gray-500'>ホーム</Text>
+            <Ionicons name='chevron-forward' size={16} color='#9CA3AF' className='mx-1' />
+            <Text className='text-sm text-gray-500' numberOfLines={1}>
+              {trade.goods_item?.category?.name || 'カテゴリ'}
+            </Text>
+            <Ionicons name='chevron-forward' size={16} color='#9CA3AF' className='mx-1' />
+            <Text className='text-sm text-gray-500' numberOfLines={1}>
+              {trade.goods_item?.name || 'グッズ'}
+            </Text>
+            <Ionicons name='chevron-forward' size={16} color='#9CA3AF' className='mx-1' />
+            <Text className='text-sm text-blue-600' numberOfLines={1}>
               {trade.item_name}
             </Text>
+          </View>
+        </View>
+
+        {/* グッズ情報 */}
+        <View className='bg-white rounded-xl p-4 mb-4'>
+          <View className='flex-row items-center mb-3'>
+            {trade.goods_item?.category && (
+              <View
+                className='w-8 h-8 rounded-full items-center justify-center mr-3'
+                style={{ backgroundColor: `${trade.goods_item.category.color}20` }}
+              >
+                <Ionicons name='folder-outline' size={16} color={trade.goods_item.category.color} />
+              </View>
+            )}
+            <View className='flex-1'>
+              <Text className='text-lg font-semibold text-gray-900'>
+                {trade.goods_item?.name || 'グッズ名'}
+              </Text>
+              <Text className='text-sm text-gray-600'>
+                {trade.goods_item?.category?.name || 'カテゴリ'}
+              </Text>
+            </View>
+          </View>
+          {trade.goods_item?.release_date && (
+            <Text className='text-sm text-gray-600'>
+              発売日: {new Date(trade.goods_item.release_date).toLocaleDateString('ja-JP')}
+            </Text>
+          )}
+        </View>
+
+        {/* 取引情報 */}
+        <View className='bg-white rounded-xl p-4 mb-4'>
+          <View className='flex-row justify-between items-start mb-3'>
+            <View className='flex-1 mr-3'>
+              <Text className='text-xl font-semibold text-gray-900'>{trade.item_name}</Text>
+              <Text className='text-sm text-gray-600 mt-1'>個数: {trade.quantity}個</Text>
+            </View>
             <View className='bg-blue-50 px-3 py-1 rounded-full'>
               <Text className='text-xs font-medium text-blue-600'>
                 {trade.type === TradeType.EXCHANGE && '交換'}
                 {trade.type === TradeType.TRANSFER && '譲渡'}
                 {trade.type === TradeType.PURCHASE && '買取'}
-                {trade.type === TradeType.SALE && '売却'}
               </Text>
             </View>
           </View>
@@ -201,9 +246,9 @@ export default function TradeDetailScreen() {
           <View className='flex-row items-center'>
             <View
               className='w-4 h-4 rounded-full mr-2'
-              style={{ backgroundColor: currentCategory?.color }}
+              style={{ backgroundColor: getCurrentCategory()?.color }}
             />
-            <Text className='text-base text-gray-900'>{currentCategory?.name}</Text>
+            <Text className='text-base text-gray-900'>{getCurrentCategory()?.name}</Text>
           </View>
         </View>
 

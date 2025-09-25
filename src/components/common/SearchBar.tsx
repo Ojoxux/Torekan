@@ -9,6 +9,9 @@ interface SearchBarProps {
   debounceMs?: number;
 }
 
+/*
+ * 検索バーのコンポーネント
+ */
 export function SearchBar({ value, onChangeText, placeholder = '検索...' }: SearchBarProps) {
   const [localValue, setLocalValue] = useState(value);
 
@@ -16,13 +19,17 @@ export function SearchBar({ value, onChangeText, placeholder = '検索...' }: Se
     setLocalValue(value);
   }, [value]);
 
-  // ローディングは表示しない（入力に即時追従）
-
+  /*
+   * テキストを入力時に検索バーのテキストを更新
+   */
   const handleChangeText = (text: string) => {
     setLocalValue(text);
     onChangeText(text);
   };
 
+  /*
+   * クリアボタンを押下時に検索バーのテキストをクリア
+   */
   const handleClear = () => {
     setLocalValue('');
     onChangeText('');

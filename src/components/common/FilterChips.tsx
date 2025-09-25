@@ -3,25 +3,26 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { useCategories } from '@/hooks/useCategories';
 import { useFilterStore } from '@/store/filterStore';
-import { TradeStatus, TradeType } from '@/types';
+import { TradeType } from '@/types';
 
+/*
+ * フィルター選択用のコンポーネント
+ * 取引種類（交換、譲渡、買取）でフィルタリング
+ */
 export function FilterChips() {
-  const { keyword, selectedStatuses, selectedTypes, selectedCategoryIds, isFilterActive, clearAllFilters, toggleCategory } = useFilterStore();
+  const {
+    keyword,
+    selectedType,
+    selectedCategoryIds,
+    toggleCategory,
+    setType,
+  } = useFilterStore();
   const { data: categories } = useCategories();
 
-  const getStatusText = (status: TradeStatus) => {
-    switch (status) {
-      case 'planned':
-        return '計画中';
-      case 'shipped':
-        return '発送済み';
-      case 'completed':
-        return '完了';
-      case 'canceled':
-        return 'キャンセル';
-    }
-  };
 
+  /*
+   * enumから取引タイプテキストを取得する
+   */
   const getTypeText = (type: TradeType) => {
     switch (type) {
       case TradeType.EXCHANGE:
@@ -30,53 +31,51 @@ export function FilterChips() {
         return '譲渡';
       case TradeType.PURCHASE:
         return '買取';
-      case TradeType.SALE:
-        return '売却';
     }
   };
 
-  if (!isFilterActive) {
-    return null;
-  }
-
-  const totalFilters = (keyword.length > 0 ? 1 : 0) + selectedStatuses.length + selectedTypes.length + selectedCategoryIds.length;
-
   return (
     <View className='mt-2'>
-      <View className='flex-row items-center justify-between mb-2'>
-        <Text className='text-sm font-medium text-gray-700'>フィルタ ({totalFilters})</Text>
-        <TouchableOpacity onPress={clearAllFilters} activeOpacity={0.7}>
-          <Text className='text-sm text-blue-500'>すべてクリア</Text>
-        </TouchableOpacity>
-      </View>
-      
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className='flex-row'>
+        {/* 取引タイプ選択ボタン */}
+        {[TradeType.EXCHANGE, TradeType.TRANSFER, TradeType.PURCHASE].map((type) => {
+          const isSelected = selectedType === type;
+          return (
+            <TouchableOpacity
+              key={type}
+              onPress={() => setType(isSelected ? null : type)}
+              className={`px-3 py-1 rounded-full mr-2 flex-row items-center ${
+                isSelected ? 'bg-blue-100' : 'bg-gray-100'
+              }`}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name='swap-horizontal-outline'
+                size={12}
+                color={isSelected ? '#3B82F6' : '#6B7280'}
+              />
+              <Text
+                className={`text-xs font-medium ml-1 ${
+                  isSelected ? 'text-blue-700' : 'text-gray-700'
+                }`}
+              >
+                {getTypeText(type)}
+              </Text>
+              {isSelected && (
+                <Ionicons name='close' size={12} color='#3B82F6' style={{ marginLeft: 4 }} />
+              )}
+            </TouchableOpacity>
+          );
+        })}
+
         {keyword.length > 0 && (
           <View className='bg-blue-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
-            <Ionicons name='search-outline' size={12} color='#3B82F6' />
+            <Ionicons name='search-outline' size={12} color='#6B7280' />
             <Text className='text-xs font-medium text-blue-700 ml-1' numberOfLines={1}>
               "{keyword}"
             </Text>
           </View>
         )}
-        
-        {selectedStatuses.map((status) => (
-          <View key={status} className='bg-green-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
-            <Ionicons name='checkmark-circle-outline' size={12} color='#10B981' />
-            <Text className='text-xs font-medium text-green-700 ml-1'>
-              {getStatusText(status)}
-            </Text>
-          </View>
-        ))}
-        
-        {selectedTypes.map((type) => (
-          <View key={type} className='bg-purple-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
-            <Ionicons name='swap-horizontal-outline' size={12} color='#8B5CF6' />
-            <Text className='text-xs font-medium text-purple-700 ml-1'>
-              {getTypeText(type)}
-            </Text>
-          </View>
-        ))}
 
         {selectedCategoryIds.map((categoryId) => {
           if (categoryId === 'uncategorized') {
@@ -93,7 +92,7 @@ export function FilterChips() {
             );
           }
 
-          const category = categories?.find(c => c.id === categoryId);
+          const category = categories?.find((c) => c.id === categoryId);
           if (!category) return null;
 
           return (

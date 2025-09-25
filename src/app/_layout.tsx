@@ -20,10 +20,6 @@ export default function RootLayout() {
                 name='auth/signup'
                 options={{ title: 'アカウント作成', headerShown: false }}
               />
-              <Stack.Screen name='trade/new' options={{ headerShown: false }} />
-              <Stack.Screen name='trade/[id]' options={{ headerShown: false }} />
-              <Stack.Screen name='trade/edit/[id]' options={{ headerShown: false }} />
-              <Stack.Screen name='settings/categories' options={{ headerShown: false }} />
             </Stack>
           </BottomSheetModalProvider>
         </AuthProvider>

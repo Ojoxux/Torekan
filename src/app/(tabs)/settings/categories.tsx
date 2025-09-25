@@ -1,10 +1,11 @@
 import { CategoryModal } from '@/components/ui/CategoryModal';
 import {
-   useCategories,
-   useCreateCategory,
-   useDeleteCategory,
-   useUpdateCategory,
+  useCategories,
+  useCreateCategory,
+  useDeleteCategory,
+  useUpdateCategory,
 } from '@/hooks/useCategories';
+import { categoryService } from '@/services/categoryService';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, SafeAreaView, ScrollView, Text, View } from 'react-native';
@@ -16,65 +17,73 @@ export default function CategoriesScreen() {
   const deleteMutation = useDeleteCategory();
 
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  // TODO: カテゴリー編集の型あっても良さそう
   const [editingCategory, setEditingCategory] = useState<{
     id: string;
     name: string;
     color: string;
   } | null>(null);
 
+  /*
+   * エラーを処理する関数
+   */
+  const handleError = (error: unknown) => {
+    const errorMessage =
+      error && typeof error === 'object' && 'code' in error && error.code === '23505'
+        ? '同じ名前のカテゴリが既に存在します'
+        : 'カテゴリの作成に失敗しました';
+
+    Alert.alert('エラー', errorMessage);
+  };
+
+  /*
+   * カテゴリを作成する関数
+   */
   const handleCreateCategory = async (name: string, color: string) => {
     try {
       await createMutation.mutateAsync({ name: name.trim(), color });
-      // HACK: キーボードアニメーションと同期するため遅延してからモーダルを閉じる
-      setTimeout(() => {
-        setIsAddModalVisible(false);
-      }, 200);
     } catch (error) {
       console.error('Category creation error:', error);
-      
-      // エラーの種類に応じてメッセージを変更
-      const errorMessage = error && typeof error === 'object' && 'code' in error && error.code === '23505'
-        ? '同じ名前のカテゴリが既に存在します'
-        : 'カテゴリの作成に失敗しました';
-      
-      Alert.alert('エラー', errorMessage);
-      
-      // HACK: エラー時もキーボードアニメーションと同期してモーダルを閉じる
-      setTimeout(() => {
-        setIsAddModalVisible(false);
-      }, 200);
+      handleError(error);
     }
   };
 
+  /*
+   * カテゴリを更新する関数
+   */
   const handleUpdateCategory = async (id: string, name: string, color: string) => {
     try {
       await updateMutation.mutateAsync({ id, updates: { name, color } });
-      // HACK: キーボードアニメーションと同期するため遅延してからモーダルを閉じる
-      setTimeout(() => {
-        setEditingCategory(null);
-      }, 200);
     } catch (error) {
       console.error('Category update error:', error);
-      
-      // エラーの種類に応じてメッセージを変更
-      const errorMessage = error && typeof error === 'object' && 'code' in error && error.code === '23505'
-        ? '同じ名前のカテゴリが既に存在します'
-        : 'カテゴリの更新に失敗しました';
-      
-      Alert.alert('エラー', errorMessage);
-      
-      // HACK: エラー時もキーボードアニメーションと同期してモーダルを閉じる
-      setTimeout(() => {
-        setEditingCategory(null);
-      }, 200);
+      handleError(error);
     }
   };
 
-  const handleDeleteCategory = (id: string, name: string) => {
-    Alert.alert(
-      'カテゴリを削除',
-      `「${name}」を削除しますか？\n\n使用中の取引がある場合、カテゴリの関連付けは解除されますが、取引データは保持されます。`,
-      [
+  /*
+   * カテゴリを削除する関数（関連データ数表示付き）
+   */
+  const handleDeleteCategory = async (id: string, name: string) => {
+    try {
+      // 削除影響を取得
+      const impact = await categoryService.getDeleteImpact(id);
+
+      let message = `「${name}」を削除してもよろしいですか？`;
+
+      if (impact.goodsCount > 0 || impact.tradesCount > 0) {
+        message += '\n\n削除されるデータ:';
+        if (impact.goodsCount > 0) {
+          message += `\n• グッズ: ${impact.goodsCount}件`;
+        }
+        if (impact.tradesCount > 0) {
+          message += `\n• 取引: ${impact.tradesCount}件`;
+        }
+        message += '\n\nこの操作は元に戻せません。';
+      } else {
+        message += '\n\nこの操作は元に戻せません。';
+      }
+
+      Alert.alert('カテゴリを削除', message, [
         { text: 'キャンセル', style: 'cancel' },
         {
           text: '削除',
@@ -88,10 +97,34 @@ export default function CategoriesScreen() {
             }
           },
         },
-      ]
-    );
+      ]);
+    } catch (error) {
+      console.error('Failed to get delete impact:', error);
+      // フォールバック: 基本的な削除確認
+      Alert.alert(
+        'カテゴリを削除',
+        `「${name}」を削除してもよろしいですか？\n\nこの操作は元に戻せません。`,
+        [
+          { text: 'キャンセル', style: 'cancel' },
+          {
+            text: '削除',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deleteMutation.mutateAsync(id);
+              } catch (error) {
+                console.error('Category deletion error:', error);
+                Alert.alert('エラー', 'カテゴリの削除に失敗しました');
+              }
+            },
+          },
+        ]
+      );
+    }
   };
 
+  // TODO: Suspense使って読み込み状態を表現したい
+  // MEMO: ErrorBoundaryパターンとか
   if (isLoading) {
     return (
       <SafeAreaView className='flex-1 bg-gray-50'>
@@ -105,7 +138,8 @@ export default function CategoriesScreen() {
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
       <View className='px-4 py-2 bg-white border-b border-gray-200 flex-row items-center justify-between'>
-        <Link href='/(tabs)/settings' asChild>
+        {/* ホーム画面(取引管理一覧)に戻る */}
+        <Link href='/' asChild>
           <Pressable className='p-2'>
             <Text className='text-blue-500 text-lg'>← 戻る</Text>
           </Pressable>
