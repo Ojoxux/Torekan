@@ -17,19 +17,25 @@ export function FilterChips() {
   } = useFilterStore();
   const { data: categories } = useCategories();
 
+  /*
+   * enumからステータステキストを取得する
+   */
   const getStatusText = (status: TradeStatus) => {
     switch (status) {
-      case 'planned':
+      case TradeStatus.PLANNED:
         return '計画中';
-      case 'shipped':
+      case TradeStatus.SHIPPED:
         return '発送済み';
-      case 'completed':
+      case TradeStatus.COMPLETED:
         return '完了';
-      case 'canceled':
+      case TradeStatus.CANCELED:
         return 'キャンセル';
     }
   };
 
+  /*
+   * enumから取引タイプテキストを取得する
+   */
   const getTypeText = (type: TradeType) => {
     switch (type) {
       case TradeType.EXCHANGE:
