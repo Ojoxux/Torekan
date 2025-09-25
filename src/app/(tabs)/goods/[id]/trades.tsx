@@ -2,17 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
+   ActivityIndicator,
+   FlatList,
+   RefreshControl,
+   SafeAreaView,
+   Text,
+   TouchableOpacity,
+   View,
 } from 'react-native';
 
+import { FilterChips } from '@/components/common/FilterChips';
 import { useGoodsItemWithTrades } from '@/hooks/useGoods';
 import { useTradesByGoodsItem } from '@/hooks/useTrades';
+import { useFilterStore } from '@/store/filterStore';
 import { Trade, TradeStatus } from '@/types';
 
 /*
@@ -21,8 +23,8 @@ import { Trade, TradeStatus } from '@/types';
 export default function TradesListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<TradeStatus | 'all'>('all');
   const router = useRouter();
+  const { selectedType } = useFilterStore();
 
   const { data: goodsItem, isLoading: goodsLoading } = useGoodsItemWithTrades(id || '');
 
@@ -30,77 +32,82 @@ export default function TradesListScreen() {
 
   const isLoading = goodsLoading || tradesLoading;
 
+  /*
+   * リフレッシュ処理
+   */
   const handleRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   };
 
-  // ステータスフィルタリング
+  /*
+   * タイプフィルタリング
+   */
   const filteredTrades = trades.filter(
-    (trade) => selectedStatus === 'all' || trade.status === selectedStatus
+    (trade) => selectedType === null || trade.type === selectedType
   );
 
-  // ステータス別にグループ化
+  /*
+   * ステータス別にグループ化
+   */
   const groupedTrades = {
-    active: filteredTrades.filter((t) =>
-      ['planned', 'negotiating', 'confirmed', 'shipped'].includes(t.status)
-    ),
+    active: filteredTrades.filter((t) => t.status === 'in_progress'),
     completed: filteredTrades.filter((t) => t.status === 'completed'),
     canceled: filteredTrades.filter((t) => t.status === 'canceled'),
   };
 
+  /*
+   * ステータス別にカラーを取得
+   */
   const getStatusColor = (status: TradeStatus) => {
     switch (status) {
-      case 'planned':
-        return 'bg-gray-500';
-      case 'negotiating':
-        return 'bg-orange-500';
-      case 'confirmed':
+      case TradeStatus.IN_PROGRESS:
         return 'bg-blue-500';
-      case 'shipped':
-        return 'bg-purple-500';
-      case 'completed':
+      case TradeStatus.COMPLETED:
         return 'bg-green-500';
-      case 'canceled':
+      case TradeStatus.CANCELED:
         return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
+  /*
+   * ステータス別にテキストを取得
+   */
   const getStatusText = (status: TradeStatus) => {
     switch (status) {
-      case 'planned':
-        return '計画中';
-      case 'negotiating':
-        return '交渉中';
-      case 'confirmed':
-        return '確定済み';
-      case 'shipped':
-        return '発送済み';
-      case 'completed':
+      case TradeStatus.IN_PROGRESS:
+        return '進行中';
+      case TradeStatus.COMPLETED:
         return '完了';
-      case 'canceled':
+      case TradeStatus.CANCELED:
         return 'キャンセル';
+      default:
+        return '不明';
     }
   };
 
+  /*
+   * ステータス別にアイコンを取得
+   */
   const getStatusIcon = (status: TradeStatus) => {
     switch (status) {
-      case 'planned':
+      case TradeStatus.IN_PROGRESS:
         return 'time-outline';
-      case 'negotiating':
-        return 'chatbubble-outline';
-      case 'confirmed':
-        return 'checkmark-circle-outline';
-      case 'shipped':
-        return 'airplane-outline';
-      case 'completed':
+      case TradeStatus.COMPLETED:
         return 'checkmark-done-outline';
-      case 'canceled':
+      case TradeStatus.CANCELED:
         return 'close-circle-outline';
+      default:
+        return 'help-circle-outline';
     }
   };
 
+  /*
+   * 取引アイテムをレンダリング
+   */
   const renderTradeItem = ({ item }: { item: Trade }) => {
     return (
       <TouchableOpacity
@@ -127,6 +134,7 @@ export default function TradesListScreen() {
                   <Text className='text-sm text-gray-600' numberOfLines={1}>
                     {item.partner_name}
                   </Text>
+                  <Text className='text-sm text-gray-600 ml-2'>• {item.quantity}個</Text>
                 </View>
               </View>
             </View>
@@ -136,7 +144,7 @@ export default function TradesListScreen() {
                 <Text className='text-xs font-medium text-blue-700'>
                   {item.type === 'exchange' && '交換'}
                   {item.type === 'transfer' && '譲渡'}
-                  {item.type === 'purchase' && '購入'}
+                  {item.type === 'purchase' && '買取'}
                 </Text>
               </View>
 
@@ -165,6 +173,9 @@ export default function TradesListScreen() {
     );
   };
 
+  /*
+   * セクションをレンダリング
+   */
   const renderSection = (title: string, data: Trade[], icon: string) => {
     if (data.length === 0) return null;
 
@@ -183,7 +194,9 @@ export default function TradesListScreen() {
     );
   };
 
-  // 初回ロード時のみフルスクリーンローディングを表示
+  /*
+   * 初回ロード時のみフルスクリーンローディングを表示
+   */
   if (isLoading && !trades.length) {
     return (
       <SafeAreaView className='flex-1 justify-center items-center bg-gray-50'>
@@ -209,9 +222,9 @@ export default function TradesListScreen() {
             <Text className='text-xl font-bold text-gray-900' numberOfLines={1}>
               {goodsItem?.name || 'グッズ'}
             </Text>
-            {goodsItem?.description && (
+            {goodsItem?.release_date && (
               <Text className='text-sm text-gray-600' numberOfLines={1}>
-                {goodsItem.description}
+                {goodsItem.release_date}
               </Text>
             )}
           </View>
@@ -230,33 +243,8 @@ export default function TradesListScreen() {
           </Text>
         </View>
 
-        {/* ステータスフィルタ */}
-        <View className='flex-row space-x-2'>
-          {[
-            { key: 'all', label: '全て' },
-            { key: 'planned', label: '計画中' },
-            { key: 'negotiating', label: '交渉中' },
-            { key: 'confirmed', label: '確定' },
-            { key: 'completed', label: '完了' },
-          ].map((filter) => (
-            <TouchableOpacity
-              key={filter.key}
-              className={`px-3 py-1 rounded-full ${
-                selectedStatus === filter.key ? 'bg-blue-500' : 'bg-gray-100'
-              }`}
-              onPress={() => setSelectedStatus(filter.key as TradeStatus | 'all')}
-              activeOpacity={0.7}
-            >
-              <Text
-                className={`text-xs font-medium ${
-                  selectedStatus === filter.key ? 'text-white' : 'text-gray-600'
-                }`}
-              >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* フィルタチップ */}
+        <FilterChips />
       </View>
 
       <FlatList
@@ -268,7 +256,7 @@ export default function TradesListScreen() {
         }
         ListHeaderComponent={
           <View>
-            {selectedStatus === 'all' ? (
+            {selectedType === null ? (
               <>
                 {renderSection('進行中の取引', groupedTrades.active, 'time-outline')}
                 {renderSection('完了した取引', groupedTrades.completed, 'checkmark-done-outline')}
