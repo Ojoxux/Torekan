@@ -103,9 +103,7 @@ export class GoodsService {
 
     if (error) throw error;
 
-    const activeTrades =
-      trades?.filter((t) => ['planned', 'negotiating', 'confirmed', 'shipped'].includes(t.status))
-        .length || 0;
+    const activeTrades = trades?.filter((t) => t.status === 'in_progress').length || 0;
 
     const completedTrades = trades?.filter((t) => t.status === 'completed').length || 0;
 
@@ -194,10 +192,7 @@ export class GoodsService {
 
     const stats = {
       total: data.length,
-      planned: 0,
-      negotiating: 0,
-      confirmed: 0,
-      shipped: 0,
+      in_progress: 0,
       completed: 0,
       canceled: 0,
       active: 0, // 進行中の取引数
@@ -210,7 +205,7 @@ export class GoodsService {
     });
 
     // 進行中の取引数を計算
-    stats.active = stats.planned + stats.negotiating + stats.confirmed + stats.shipped;
+    stats.active = stats.in_progress;
 
     return stats;
   }

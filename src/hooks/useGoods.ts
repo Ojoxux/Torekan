@@ -8,6 +8,10 @@ export function useGoodsItemsByCategory(categoryId: string) {
     queryKey: ['goods-items', 'category', categoryId],
     queryFn: () => goodsService.getGoodsItemsByCategory(categoryId),
     enabled: !!categoryId,
+    staleTime: 0, // 常に最新データを取得
+    gcTime: 5 * 60 * 1000, // 5分間キャッシュ保持
+    refetchOnMount: true, // マウント時に必ずリフェッチ
+    refetchOnWindowFocus: true, // フォーカス時にリフェッチ
   });
 }
 
@@ -62,12 +66,17 @@ export function useCreateGoodsItem() {
   return useMutation({
     mutationFn: (input: CreateGoodsItemInput) => goodsService.createGoodsItem(input),
     onSuccess: (data) => {
-      // 関連するカテゴリのグッズリストを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'category', data.category_id] });
-      // 全グッズリストと検索結果のキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'all'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'search'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] }); // 統計更新のため
+      // すべての関連キャッシュを完全にクリア
+      queryClient.removeQueries({ queryKey: ['goods-items'] });
+      queryClient.removeQueries({ queryKey: ['categories'] });
+
+      // 少し待ってからリフェッチ
+      setTimeout(() => {
+        queryClient.refetchQueries({
+          queryKey: ['goods-items', 'category', data.category_id],
+        });
+        queryClient.refetchQueries({ queryKey: ['categories'] });
+      }, 200);
     },
   });
 }
@@ -80,32 +89,34 @@ export function useUpdateGoodsItem() {
     mutationFn: ({
       id,
       input,
-      originalCategoryId,
+      originalCategoryId, // onSuccessコールバックで使われてるので、unusedエラーは気にしない
     }: {
       id: string;
       input: UpdateGoodsItemInput;
       originalCategoryId?: string;
     }) => goodsService.updateGoodsItem(id, input),
     onSuccess: (data, { input, originalCategoryId }) => {
-      // 特定のグッズアイテムのキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', data.id] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', data.id, 'with-trades'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', data.id, 'stats'] });
+      // すべての関連キャッシュを完全にクリア
+      queryClient.removeQueries({ queryKey: ['goods-items'] });
+      queryClient.removeQueries({ queryKey: ['categories'] });
 
-      // 現在のカテゴリのグッズリストを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'category', data.category_id] });
-
-      // カテゴリ変更の場合は元のカテゴリも無効化
-      if (input.category_id && originalCategoryId && input.category_id !== originalCategoryId) {
-        queryClient.invalidateQueries({
-          queryKey: ['goods-items', 'category', originalCategoryId],
+      // 少し待ってからリフェッチ
+      setTimeout(() => {
+        // 現在表示中のカテゴリのデータを再取得
+        queryClient.refetchQueries({
+          queryKey: ['goods-items', 'category', data.category_id],
         });
-      }
 
-      // 全グッズリストと検索結果のキャッシュを無効化（統計更新のため）
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'all'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'search'] });
-      queryClient.invalidateQueries({ queryKey: ['categories'] }); // 統計更新のため
+        // カテゴリが変更された場合は元のカテゴリも再取得
+        if (input.category_id && originalCategoryId && input.category_id !== originalCategoryId) {
+          queryClient.refetchQueries({
+            queryKey: ['goods-items', 'category', originalCategoryId],
+          });
+        }
+
+        // カテゴリ統計も再取得
+        queryClient.refetchQueries({ queryKey: ['categories'] });
+      }, 200);
     },
   });
 }
@@ -125,19 +136,17 @@ export function useDeleteGoodsItem() {
 
   return useMutation({
     mutationFn: (id: string) => goodsService.deleteGoodsItem(id),
-    onSuccess: (_, deletedId) => {
-      // 削除されたアイテム関連のキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', deletedId] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', deletedId, 'with-trades'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', deletedId, 'stats'] });
+    onSuccess: (_, _deletedId) => {
+      // すべての関連キャッシュを完全にクリア
+      queryClient.removeQueries({ queryKey: ['goods-items'] });
+      queryClient.removeQueries({ queryKey: ['categories'] });
+      queryClient.removeQueries({ queryKey: ['trades'] });
 
-      // 全グッズリストと検索結果、カテゴリ別リストを無効化
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'all'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'search'] });
-      queryClient.invalidateQueries({ queryKey: ['goods-items', 'category'] });
-
-      queryClient.invalidateQueries({ queryKey: ['categories'] }); // 統計更新のため
-      queryClient.invalidateQueries({ queryKey: ['trades'] }); // 関連取引更新のため
+      // 少し待ってからリフェッチ
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['goods-items', 'category'] });
+        queryClient.refetchQueries({ queryKey: ['categories'] });
+      }, 200);
     },
   });
 }

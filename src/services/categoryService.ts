@@ -190,9 +190,7 @@ export const categoryService = {
       return {
         tradesCount: trades.length,
         hasTrades: trades.length > 0,
-        activeTradesCount: trades.filter((trade) =>
-          ['planned', 'negotiating', 'confirmed', 'shipped'].includes(trade.status)
-        ).length,
+        activeTradesCount: trades.filter((trade) => trade.status === 'in_progress').length,
         completedTradesCount: trades.filter((trade) => trade.status === 'completed').length,
       };
     });
