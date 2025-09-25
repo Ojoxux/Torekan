@@ -5,6 +5,10 @@ import { useCategories } from '@/hooks/useCategories';
 import { useFilterStore } from '@/store/filterStore';
 import { TradeStatus, TradeType } from '@/types';
 
+/*
+ * フィルター選択用のコンポーネント
+ * TODO: フィルターは取引状態で絞り込むのではなく、取引種類で絞り込みたい(交換、譲渡、買取)
+ */
 export function FilterChips() {
   const {
     keyword,

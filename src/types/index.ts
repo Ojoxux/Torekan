@@ -75,6 +75,7 @@ export type SortOrder = 'created_at' | 'updated_at' | 'status';
 
 /*
  * 取引データの型
+ * TODO: 個数を入れたい
  */
 export interface Trade {
   id: string;
@@ -107,6 +108,7 @@ export interface GoodsCategory {
 
 /*
  * グッズアイテムデータの型
+ * TODO: グッズアイテムの説明はいらなくて、発売日を入れたい
  */
 export interface GoodsItem {
   id: string;
