@@ -4,7 +4,7 @@ import { create } from 'zustand';
 export interface FilterState {
   keyword: string;
   selectedStatuses: TradeStatus[];
-  selectedTypes: TradeType[];
+  selectedType: TradeType | null;
   selectedCategoryIds: string[];
   isFilterActive: boolean;
 }
@@ -12,7 +12,7 @@ export interface FilterState {
 export interface FilterActions {
   setKeyword: (keyword: string) => void;
   toggleStatus: (status: TradeStatus) => void;
-  toggleType: (type: TradeType) => void;
+  setType: (type: TradeType | null) => void;
   toggleCategory: (categoryId: string) => void;
   clearAllFilters: () => void;
   getActiveFiltersCount: () => number;
@@ -23,7 +23,7 @@ export type FilterStore = FilterState & FilterActions;
 const initialState: FilterState = {
   keyword: '',
   selectedStatuses: [],
-  selectedTypes: [],
+  selectedType: null,
   selectedCategoryIds: [],
   isFilterActive: false,
 };
@@ -38,7 +38,7 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       isFilterActive:
         trimmedKeyword.length > 0 ||
         state.selectedStatuses.length > 0 ||
-        state.selectedTypes.length > 0 ||
+        state.selectedType !== null ||
         state.selectedCategoryIds.length > 0,
     }));
   },
@@ -54,26 +54,20 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
         isFilterActive:
           state.keyword.length > 0 ||
           selectedStatuses.length > 0 ||
-          state.selectedTypes.length > 0 ||
+          state.selectedType !== null ||
           state.selectedCategoryIds.length > 0,
       };
     }),
 
-  toggleType: (type: TradeType) =>
-    set((state) => {
-      const selectedTypes = state.selectedTypes.includes(type)
-        ? state.selectedTypes.filter((t) => t !== type)
-        : [...state.selectedTypes, type];
-
-      return {
-        selectedTypes,
-        isFilterActive:
-          state.keyword.length > 0 ||
-          state.selectedStatuses.length > 0 ||
-          selectedTypes.length > 0 ||
-          state.selectedCategoryIds.length > 0,
-      };
-    }),
+  setType: (type: TradeType | null) =>
+    set((state) => ({
+      selectedType: type,
+      isFilterActive:
+        state.keyword.length > 0 ||
+        state.selectedStatuses.length > 0 ||
+        type !== null ||
+        state.selectedCategoryIds.length > 0,
+    })),
 
   toggleCategory: (categoryId: string) =>
     set((state) => {
@@ -86,7 +80,7 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
         isFilterActive:
           state.keyword.length > 0 ||
           state.selectedStatuses.length > 0 ||
-          state.selectedTypes.length > 0 ||
+          state.selectedType !== null ||
           selectedCategoryIds.length > 0,
       };
     }),
@@ -101,7 +95,7 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
     return (
       (state.keyword.length > 0 ? 1 : 0) +
       state.selectedStatuses.length +
-      state.selectedTypes.length +
+      (state.selectedType !== null ? 1 : 0) +
       state.selectedCategoryIds.length
     );
   },
