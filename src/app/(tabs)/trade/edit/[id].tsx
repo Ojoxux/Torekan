@@ -36,6 +36,7 @@ export default function EditTradeScreen() {
     type: TradeType.TRANSFER,
     partner_name: '',
     item_name: '',
+    quantity: 1,
     payment_method: undefined as PaymentMethod | undefined,
     notes: '',
     shipping_deadline: undefined as string | undefined,
@@ -52,6 +53,7 @@ export default function EditTradeScreen() {
         type: trade.type,
         partner_name: trade.partner_name || '',
         item_name: trade.item_name || '',
+        quantity: trade.quantity || 1,
         payment_method: trade.payment_method,
         notes: trade.notes || '',
         shipping_deadline: trade.shipping_deadline || undefined,
@@ -64,6 +66,7 @@ export default function EditTradeScreen() {
     const tradeData = {
       partner_name: formData.partner_name.trim(),
       item_name: formData.item_name.trim(),
+      quantity: formData.quantity,
       type: formData.type,
       payment_method: formData.payment_method,
       notes: formData.notes.trim() || undefined,
@@ -90,6 +93,7 @@ export default function EditTradeScreen() {
         type: formData.type,
         partner_name: formData.partner_name,
         item_name: formData.item_name,
+        quantity: formData.quantity,
         payment_method: formData.payment_method,
         notes: formData.notes,
         shipping_deadline: formData.shipping_deadline,
@@ -107,7 +111,7 @@ export default function EditTradeScreen() {
   const tradeTypeOptions = [
     { value: TradeType.EXCHANGE, label: '交換' },
     { value: TradeType.TRANSFER, label: '譲渡' },
-    { value: TradeType.PURCHASE, label: '購入' },
+    { value: TradeType.PURCHASE, label: '買取' },
   ];
 
   const paymentMethodOptions = [
@@ -211,6 +215,24 @@ export default function EditTradeScreen() {
               value={formData.item_name}
               onChangeText={(text) => setFormData({ ...formData, item_name: text })}
               maxLength={128}
+            />
+          </View>
+
+          {/* 個数 */}
+          <View className='bg-white rounded-xl p-4 mb-4'>
+            <Text className='text-sm font-medium text-gray-700 mb-2'>
+              個数 <Text className='text-red-500'>*</Text>
+            </Text>
+            <TextInput
+              className='border border-gray-300 rounded-lg px-3 py-2 text-base'
+              placeholder='1'
+              value={formData.quantity.toString()}
+              onChangeText={(text) => {
+                const num = parseInt(text, 10) || 1;
+                setFormData({ ...formData, quantity: Math.max(1, num) });
+              }}
+              keyboardType='number-pad'
+              maxLength={3}
             />
           </View>
 

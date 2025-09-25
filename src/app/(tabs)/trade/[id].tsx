@@ -28,10 +28,7 @@ export default function TradeDetailScreen() {
   const deleteTrade = useDeleteTrade();
 
   const statusOptions: { value: TradeStatus; label: string; color: string }[] = [
-    { value: TradeStatus.PLANNED, label: '計画中', color: '#6B7280' },
-    { value: TradeStatus.NEGOTIATING, label: '交渉中', color: '#F59E0B' },
-    { value: TradeStatus.CONFIRMED, label: '確定済み', color: '#3B82F6' },
-    { value: TradeStatus.SHIPPED, label: '発送済み', color: '#8B5CF6' },
+    { value: TradeStatus.IN_PROGRESS, label: '進行中', color: '#3B82F6' },
     { value: TradeStatus.COMPLETED, label: '完了', color: '#10B981' },
     { value: TradeStatus.CANCELED, label: 'キャンセル', color: '#EF4444' },
   ];
@@ -155,22 +152,25 @@ export default function TradeDetailScreen() {
               </Text>
             </View>
           </View>
-          {trade.goods_item?.description && (
-            <Text className='text-sm text-gray-600'>{trade.goods_item.description}</Text>
+          {trade.goods_item?.release_date && (
+            <Text className='text-sm text-gray-600'>
+              発売日: {new Date(trade.goods_item.release_date).toLocaleDateString('ja-JP')}
+            </Text>
           )}
         </View>
 
         {/* 取引情報 */}
         <View className='bg-white rounded-xl p-4 mb-4'>
           <View className='flex-row justify-between items-start mb-3'>
-            <Text className='text-xl font-semibold text-gray-900 flex-1 mr-3'>
-              {trade.item_name}
-            </Text>
+            <View className='flex-1 mr-3'>
+              <Text className='text-xl font-semibold text-gray-900'>{trade.item_name}</Text>
+              <Text className='text-sm text-gray-600 mt-1'>個数: {trade.quantity}個</Text>
+            </View>
             <View className='bg-blue-50 px-3 py-1 rounded-full'>
               <Text className='text-xs font-medium text-blue-600'>
                 {trade.type === TradeType.EXCHANGE && '交換'}
                 {trade.type === TradeType.TRANSFER && '譲渡'}
-                {trade.type === TradeType.PURCHASE && '購入'}
+                {trade.type === TradeType.PURCHASE && '買取'}
               </Text>
             </View>
           </View>

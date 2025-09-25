@@ -37,6 +37,7 @@ export default function NewTradeScreen() {
     type: TradeType.EXCHANGE,
     partner_name: '',
     item_name: '',
+    quantity: 1,
     payment_method: undefined as PaymentMethod | undefined,
     notes: '',
     shipping_deadline: undefined as string | undefined,
@@ -52,8 +53,9 @@ export default function NewTradeScreen() {
       goods_item_id: formData.goods_item_id,
       partner_name: formData.partner_name.trim(),
       item_name: formData.item_name.trim(),
+      quantity: formData.quantity,
       type: formData.type,
-      status: TradeStatus.PLANNED,
+      status: TradeStatus.IN_PROGRESS,
       payment_method: formData.payment_method,
       notes: formData.notes.trim() || undefined,
       shipping_deadline: formData.shipping_deadline || undefined,
@@ -76,6 +78,7 @@ export default function NewTradeScreen() {
         type: TradeType.EXCHANGE,
         partner_name: '',
         item_name: '',
+        quantity: 1,
         payment_method: undefined as PaymentMethod | undefined,
         notes: '',
         shipping_deadline: undefined as string | undefined,
@@ -120,7 +123,7 @@ export default function NewTradeScreen() {
   const tradeTypeOptions = [
     { value: TradeType.EXCHANGE, label: '交換', icon: 'swap-horizontal-outline' },
     { value: TradeType.TRANSFER, label: '譲渡', icon: 'arrow-forward-outline' },
-    { value: TradeType.PURCHASE, label: '購入', icon: 'card-outline' },
+    { value: TradeType.PURCHASE, label: '買取', icon: 'card-outline' },
   ];
 
   const paymentMethodOptions = [
@@ -200,6 +203,24 @@ export default function NewTradeScreen() {
               value={formData.item_name}
               onChangeText={(text) => setFormData({ ...formData, item_name: text })}
               maxLength={128}
+            />
+          </View>
+
+          {/* 個数 */}
+          <View className='bg-white rounded-xl p-4 mb-4'>
+            <Text className='text-sm font-medium text-gray-700 mb-2'>
+              個数 <Text className='text-red-500'>*</Text>
+            </Text>
+            <TextInput
+              className='border border-gray-300 rounded-lg px-3 py-2 text-base'
+              placeholder='1'
+              value={formData.quantity.toString()}
+              onChangeText={(text) => {
+                const num = parseInt(text, 10) || 1;
+                setFormData({ ...formData, quantity: Math.max(1, num) });
+              }}
+              keyboardType='number-pad'
+              maxLength={3}
             />
           </View>
 
