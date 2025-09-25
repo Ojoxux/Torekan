@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import type {
-  CreateTradeInput,
-  Trade,
-  TradeStatus,
-  TradeType,
-  TradeWithGoods,
-  UpdateTradeInput,
+   CreateTradeInput,
+   Trade,
+   TradeStatus,
+   TradeType,
+   TradeWithGoods,
+   UpdateTradeInput,
 } from '@/types';
 
 export const tradeService = {
@@ -167,10 +167,7 @@ export const tradeService = {
 
     const stats = {
       total: data.length,
-      planned: 0,
-      negotiating: 0,
-      confirmed: 0,
-      shipped: 0,
+      in_progress: 0,
       completed: 0,
       canceled: 0,
     };
@@ -198,7 +195,7 @@ export const tradeService = {
         )
       `)
       .lt('shipping_deadline', today)
-      .in('status', ['planned', 'negotiating', 'confirmed']);
+      .eq('status', 'in_progress');
 
     if (error) throw error;
     return data || [];
