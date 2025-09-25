@@ -21,6 +21,32 @@ export enum PaymentMethod {
   OTHER = 'other',
 }
 
+export enum PresetColor {
+  RED = '#EF4444',
+  ORANGE = '#F97316',
+  YELLOW = '#EAB308',
+  GREEN = '#22C55E',
+  CYAN = '#06B6D4',
+  BLUE = '#3B82F6',
+  VIOLET = '#8B5CF6',
+  PINK = '#EC4899',
+  GRAY = '#6B7280',
+  DARK_GRAY = '#374151',
+}
+
+export enum PresetIcon {
+  FOLDER = 'folder',
+  BADGE = 'badge',
+  STAR = 'star',
+  KEY = 'key',
+  HEART = 'heart',
+  GIFT = 'gift',
+  BOOKMARK = 'bookmark',
+  TAG = 'tag',
+  DIAMOND = 'diamond',
+  TROPHY = 'trophy',
+}
+
 export type SortOrder = 'created_at' | 'updated_at' | 'status';
 
 export interface Trade {
