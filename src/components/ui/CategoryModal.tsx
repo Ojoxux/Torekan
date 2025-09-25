@@ -1,7 +1,18 @@
 import { categorySchema } from '@/lib/schemas';
 import { categoryService } from '@/services/categoryService';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as v from 'valibot';
 
@@ -15,22 +26,9 @@ interface CategoryModalProps {
   initialIcon?: string;
 }
 
-// 利用可能なアイコンリスト
-const availableIcons = [
-  { name: 'folder-outline', label: 'フォルダ' },
-  { name: 'cube-outline', label: 'ボックス' },
-  { name: 'heart-outline', label: 'ハート' },
-  { name: 'star-outline', label: 'スター' },
-  { name: 'musical-notes-outline', label: '音楽' },
-  { name: 'game-controller-outline', label: 'ゲーム' },
-  { name: 'book-outline', label: '本' },
-  { name: 'camera-outline', label: 'カメラ' },
-  { name: 'car-outline', label: '車' },
-  { name: 'home-outline', label: 'ホーム' },
-  { name: 'gift-outline', label: 'ギフト' },
-  { name: 'trophy-outline', label: 'トロフィー' },
-] as const;
-
+/*
+ * カテゴリ設定用のモーダルコンポーネント
+ */
 export function CategoryModal({
   visible,
   onClose,
@@ -82,7 +80,7 @@ export function CategoryModal({
 
     // すぐにモーダルを閉じる
     onClose();
-    
+
     // 送信処理を実行
     onSubmit(trimmedName, color, icon);
     setName('');
@@ -95,15 +93,10 @@ export function CategoryModal({
       {visible && (
         <Pressable onPress={handleDismiss} className='absolute inset-0 z-40 bg-black/50' />
       )}
-      <Modal
-        transparent
-        visible={visible}
-        onRequestClose={handleDismiss}
-        animationType="slide"
-      >
-        <View className='flex-1 justify-end' pointerEvents="box-none">
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      <Modal transparent visible={visible} onRequestClose={handleDismiss} animationType='slide'>
+        <View className='flex-1 justify-end' pointerEvents='box-none'>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             className='flex-1 justify-end'
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
           >
@@ -112,9 +105,9 @@ export function CategoryModal({
                 className='flex-1'
                 keyboardShouldPersistTaps='handled'
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ 
+                contentContainerStyle={{
                   padding: 24,
-                  paddingBottom: Math.max(insets.bottom + 24, 48)
+                  paddingBottom: Math.max(insets.bottom + 24, 48),
                 }}
               >
                 <Text className='text-xl font-bold mb-4'>{title}</Text>
