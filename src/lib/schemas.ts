@@ -24,9 +24,7 @@ export const goodsItemSchema = v.object({
     v.minLength(1, 'グッズ名は必須です'),
     v.maxLength(128, 'グッズ名は128文字以内で入力してください')
   ),
-  description: v.optional(
-    v.pipe(v.string(), v.maxLength(500, '説明は500文字以内で入力してください'))
-  ),
+  release_date: v.optional(v.pipe(v.string(), v.isoDate('有効な日付を入力してください'))),
   sort_order: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)), 0),
 });
 
@@ -43,8 +41,13 @@ export const tradeSchema = v.object({
     v.minLength(1, 'アイテム名は必須です'),
     v.maxLength(128, 'アイテム名は128文字以内で入力してください')
   ),
+  quantity: v.pipe(
+    v.number(),
+    v.integer('整数で入力してください'),
+    v.minValue(1, '個数は1以上で入力してください')
+  ),
   type: v.enum(TradeType, '取引種別を選択してください'),
-  status: v.optional(v.enum(TradeStatus), TradeStatus.PLANNED),
+  status: v.optional(v.enum(TradeStatus), TradeStatus.IN_PROGRESS),
   payment_method: v.optional(v.union([v.enum(PaymentMethod), v.null()])),
   notes: v.optional(
     v.nullable(v.pipe(v.string(), v.maxLength(1000, 'メモは1000文字以内で入力してください')))
