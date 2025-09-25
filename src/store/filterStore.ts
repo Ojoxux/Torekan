@@ -36,9 +36,9 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
     set((state) => ({
       keyword: trimmedKeyword,
       isFilterActive:
-        trimmedKeyword.length > 0 || 
-        state.selectedStatuses.length > 0 || 
-        state.selectedTypes.length > 0 || 
+        trimmedKeyword.length > 0 ||
+        state.selectedStatuses.length > 0 ||
+        state.selectedTypes.length > 0 ||
         state.selectedCategoryIds.length > 0,
     }));
   },
@@ -52,9 +52,9 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       return {
         selectedStatuses,
         isFilterActive:
-          state.keyword.length > 0 || 
-          selectedStatuses.length > 0 || 
-          state.selectedTypes.length > 0 || 
+          state.keyword.length > 0 ||
+          selectedStatuses.length > 0 ||
+          state.selectedTypes.length > 0 ||
           state.selectedCategoryIds.length > 0,
       };
     }),
@@ -68,9 +68,9 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       return {
         selectedTypes,
         isFilterActive:
-          state.keyword.length > 0 || 
-          state.selectedStatuses.length > 0 || 
-          selectedTypes.length > 0 || 
+          state.keyword.length > 0 ||
+          state.selectedStatuses.length > 0 ||
+          selectedTypes.length > 0 ||
           state.selectedCategoryIds.length > 0,
       };
     }),
@@ -84,9 +84,9 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       return {
         selectedCategoryIds,
         isFilterActive:
-          state.keyword.length > 0 || 
-          state.selectedStatuses.length > 0 || 
-          state.selectedTypes.length > 0 || 
+          state.keyword.length > 0 ||
+          state.selectedStatuses.length > 0 ||
+          state.selectedTypes.length > 0 ||
           selectedCategoryIds.length > 0,
       };
     }),

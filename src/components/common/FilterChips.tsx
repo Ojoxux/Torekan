@@ -6,7 +6,15 @@ import { useFilterStore } from '@/store/filterStore';
 import { TradeStatus, TradeType } from '@/types';
 
 export function FilterChips() {
-  const { keyword, selectedStatuses, selectedTypes, selectedCategoryIds, isFilterActive, clearAllFilters, toggleCategory } = useFilterStore();
+  const {
+    keyword,
+    selectedStatuses,
+    selectedTypes,
+    selectedCategoryIds,
+    isFilterActive,
+    clearAllFilters,
+    toggleCategory,
+  } = useFilterStore();
   const { data: categories } = useCategories();
 
   const getStatusText = (status: TradeStatus) => {
@@ -29,9 +37,7 @@ export function FilterChips() {
       case TradeType.TRANSFER:
         return '譲渡';
       case TradeType.PURCHASE:
-        return '買取';
-      case TradeType.SALE:
-        return '売却';
+        return '購入';
     }
   };
 
@@ -39,7 +45,11 @@ export function FilterChips() {
     return null;
   }
 
-  const totalFilters = (keyword.length > 0 ? 1 : 0) + selectedStatuses.length + selectedTypes.length + selectedCategoryIds.length;
+  const totalFilters =
+    (keyword.length > 0 ? 1 : 0) +
+    selectedStatuses.length +
+    selectedTypes.length +
+    selectedCategoryIds.length;
 
   return (
     <View className='mt-2'>
@@ -49,7 +59,7 @@ export function FilterChips() {
           <Text className='text-sm text-blue-500'>すべてクリア</Text>
         </TouchableOpacity>
       </View>
-      
+
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className='flex-row'>
         {keyword.length > 0 && (
           <View className='bg-blue-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
@@ -59,22 +69,24 @@ export function FilterChips() {
             </Text>
           </View>
         )}
-        
+
         {selectedStatuses.map((status) => (
-          <View key={status} className='bg-green-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
+          <View
+            key={status}
+            className='bg-green-100 px-3 py-1 rounded-full mr-2 flex-row items-center'
+          >
             <Ionicons name='checkmark-circle-outline' size={12} color='#10B981' />
-            <Text className='text-xs font-medium text-green-700 ml-1'>
-              {getStatusText(status)}
-            </Text>
+            <Text className='text-xs font-medium text-green-700 ml-1'>{getStatusText(status)}</Text>
           </View>
         ))}
-        
+
         {selectedTypes.map((type) => (
-          <View key={type} className='bg-purple-100 px-3 py-1 rounded-full mr-2 flex-row items-center'>
+          <View
+            key={type}
+            className='bg-purple-100 px-3 py-1 rounded-full mr-2 flex-row items-center'
+          >
             <Ionicons name='swap-horizontal-outline' size={12} color='#8B5CF6' />
-            <Text className='text-xs font-medium text-purple-700 ml-1'>
-              {getTypeText(type)}
-            </Text>
+            <Text className='text-xs font-medium text-purple-700 ml-1'>{getTypeText(type)}</Text>
           </View>
         ))}
 
@@ -93,7 +105,7 @@ export function FilterChips() {
             );
           }
 
-          const category = categories?.find(c => c.id === categoryId);
+          const category = categories?.find((c) => c.id === categoryId);
           if (!category) return null;
 
           return (
