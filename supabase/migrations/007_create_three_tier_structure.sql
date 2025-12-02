@@ -130,18 +130,22 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_goods_categories_updated_at ON goods_categories;
 CREATE TRIGGER update_goods_categories_updated_at 
   BEFORE UPDATE ON goods_categories 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_goods_items_updated_at ON goods_items;
 CREATE TRIGGER update_goods_items_updated_at 
   BEFORE UPDATE ON goods_items 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_trades_updated_at ON trades;
 CREATE TRIGGER update_trades_updated_at 
   BEFORE UPDATE ON trades 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
 CREATE TRIGGER update_settings_updated_at 
   BEFORE UPDATE ON settings 
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

@@ -1,7 +1,8 @@
 -- Create indexes for trades table
 CREATE INDEX idx_trades_user_id ON trades(user_id);
 CREATE INDEX idx_trades_status ON trades(status);
-CREATE INDEX idx_trades_is_archived ON trades(is_archived);
+-- is_archived column doesn't exist in initial schema
+-- CREATE INDEX idx_trades_is_archived ON trades(is_archived);
 CREATE INDEX idx_trades_event_date ON trades(event_date);
 CREATE INDEX idx_trades_created_at ON trades(created_at DESC);
 CREATE INDEX idx_trades_updated_at ON trades(updated_at DESC);
