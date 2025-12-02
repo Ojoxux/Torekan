@@ -89,77 +89,79 @@ export function CategoryModal({
   }, [name, color, icon, onSubmit, onClose]);
 
   return (
-    <>
-      {visible && (
-        <Pressable onPress={handleDismiss} className='absolute inset-0 z-40 bg-black/50' />
-      )}
-      <Modal transparent visible={visible} onRequestClose={handleDismiss} animationType='slide'>
-        <View className='flex-1 justify-end' pointerEvents='box-none'>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className='flex-1 justify-end'
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-          >
-            <View className='bg-white rounded-t-2xl min-h-[35%] max-h-[80%]'>
-              <ScrollView
-                className='flex-1'
-                keyboardShouldPersistTaps='handled'
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  padding: 24,
-                  paddingBottom: Math.max(insets.bottom + 24, 48),
-                }}
-              >
-                <Text className='text-xl font-bold mb-4'>{title}</Text>
+    <Modal transparent visible={visible} onRequestClose={handleDismiss} animationType='slide'>
+      <View className='flex-1 justify-end'>
+        <Pressable
+          onPress={handleDismiss}
+          className='absolute inset-0 bg-black/50'
+          style={{ zIndex: 1 }}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className='flex-1 justify-end'
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          pointerEvents='box-none'
+          style={{ zIndex: 2 }}
+        >
+          <View className='bg-white rounded-t-2xl min-h-[35%] max-h-[80%]'>
+            <ScrollView
+              className='flex-1'
+              keyboardShouldPersistTaps='handled'
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                padding: 24,
+                paddingBottom: Math.max(insets.bottom + 24, 48),
+              }}
+            >
+              <Text className='text-xl font-bold mb-4'>{title}</Text>
 
-                <Text className='text-gray-700 font-medium mb-2'>カテゴリ名</Text>
-                <TextInput
-                  value={name}
-                  onChangeText={setName}
-                  placeholder='カテゴリ名を入力'
-                  className='border border-gray-300 rounded-lg p-3 mb-4'
-                  autoCorrect={false}
-                  autoCapitalize='none'
-                  keyboardType='default'
-                  returnKeyType='done'
-                  maxLength={32}
-                  autoComplete='off'
-                  spellCheck={false}
-                  textContentType='none'
-                  importantForAutofill='no'
-                  blurOnSubmit={true}
-                  caretHidden={false}
-                  selectTextOnFocus={false}
-                  autoFocus={false}
-                />
+              <Text className='text-gray-700 font-medium mb-2'>カテゴリ名</Text>
+              <TextInput
+                value={name}
+                onChangeText={setName}
+                placeholder='カテゴリ名を入力'
+                className='border border-gray-300 rounded-lg p-3 mb-4'
+                autoCorrect={false}
+                autoCapitalize='none'
+                keyboardType='default'
+                returnKeyType='done'
+                maxLength={32}
+                autoComplete='off'
+                spellCheck={false}
+                textContentType='none'
+                importantForAutofill='no'
+                blurOnSubmit={true}
+                caretHidden={false}
+                selectTextOnFocus={false}
+                autoFocus={false}
+              />
 
-                <Text className='text-gray-700 font-medium mb-2'>カラー</Text>
-                <View className='flex-row flex-wrap gap-2 mb-6'>
-                  {presetColors.map((presetColor) => (
-                    <Pressable
-                      key={presetColor}
-                      onPress={() => setColor(presetColor)}
-                      className={`w-8 h-8 rounded-full border-2 ${
-                        color === presetColor ? 'border-gray-800' : 'border-gray-300'
-                      }`}
-                      style={{ backgroundColor: presetColor }}
-                    />
-                  ))}
-                </View>
+              <Text className='text-gray-700 font-medium mb-2'>カラー</Text>
+              <View className='flex-row flex-wrap gap-2 mb-6'>
+                {presetColors.map((presetColor) => (
+                  <Pressable
+                    key={presetColor}
+                    onPress={() => setColor(presetColor)}
+                    className={`w-8 h-8 rounded-full border-2 ${
+                      color === presetColor ? 'border-gray-800' : 'border-gray-300'
+                    }`}
+                    style={{ backgroundColor: presetColor }}
+                  />
+                ))}
+              </View>
 
-                <View className='flex-row gap-3'>
-                  <Pressable onPress={handleDismiss} className='flex-1 bg-gray-200 rounded-lg p-3'>
-                    <Text className='text-gray-800 text-center font-medium'>キャンセル</Text>
-                  </Pressable>
-                  <Pressable onPress={handleSubmit} className='flex-1 bg-blue-500 rounded-lg p-3'>
-                    <Text className='text-white text-center font-medium'>保存</Text>
-                  </Pressable>
-                </View>
-              </ScrollView>
-            </View>
-          </KeyboardAvoidingView>
-        </View>
-      </Modal>
-    </>
+              <View className='flex-row gap-3'>
+                <Pressable onPress={handleDismiss} className='flex-1 bg-gray-200 rounded-lg p-3'>
+                  <Text className='text-gray-800 text-center font-medium'>キャンセル</Text>
+                </Pressable>
+                <Pressable onPress={handleSubmit} className='flex-1 bg-blue-500 rounded-lg p-3'>
+                  <Text className='text-white text-center font-medium'>保存</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
   );
 }
