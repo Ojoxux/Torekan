@@ -7,17 +7,17 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3B82F6" />
+      <View className='flex-1 justify-center items-center bg-white'>
+        <ActivityIndicator size='large' color='#3B82F6' />
       </View>
     );
   }
 
   // ユーザーがログインしていない場合はログイン画面へ
   if (!user) {
-    return <Redirect href="/auth/login" />;
+    return <Redirect href='/auth/login' />;
   }
 
   // ログイン済みの場合はタブ画面へ
-  return <Redirect href="/(tabs)" />;
+  return <Redirect href='/(tabs)' />;
 }

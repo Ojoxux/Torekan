@@ -6,7 +6,11 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase環境変数が設定されていません。.envファイルを確認してください。');
+  console.error('❌ Supabase環境変数が設定されていません。.envファイルを確認してください。');
+  console.error('現在の設定:');
+  console.error('  EXPO_PUBLIC_SUPABASE_URL:', supabaseUrl ? '設定済み' : '未設定');
+  console.error('  EXPO_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '設定済み' : '未設定');
+  throw new Error('Supabase環境変数が設定されていません');
 }
 
 // Expo SecureStore adapter for Supabase

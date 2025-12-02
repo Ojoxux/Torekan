@@ -10,15 +10,8 @@ import { TradeType } from '@/types';
  * 取引種類（交換、譲渡、買取）でフィルタリング
  */
 export function FilterChips() {
-  const {
-    keyword,
-    selectedType,
-    selectedCategoryIds,
-    toggleCategory,
-    setType,
-  } = useFilterStore();
+  const { keyword, selectedType, selectedCategoryIds, toggleCategory, setType } = useFilterStore();
   const { data: categories } = useCategories();
-
 
   /*
    * enumから取引タイプテキストを取得する

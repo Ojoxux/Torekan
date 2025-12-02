@@ -14,7 +14,9 @@ export const todoService = {
   },
 
   async create(todo: Omit<Todo, 'id' | 'user_id' | 'created_at' | 'updated_at'>) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     const { data, error } = await supabase
@@ -31,26 +33,28 @@ export const todoService = {
   },
 
   async createBatch(tradeId: string, todos: Array<{ content: string; display_order: number }>) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    const todosToInsert = todos.map(todo => ({
+    const todosToInsert = todos.map((todo) => ({
       ...todo,
       trade_id: tradeId,
       user_id: user.id,
       is_completed: false,
     }));
 
-    const { data, error } = await supabase
-      .from('todos')
-      .insert(todosToInsert)
-      .select();
+    const { data, error } = await supabase.from('todos').insert(todosToInsert).select();
 
     if (error) throw error;
     return data as Todo[];
   },
 
-  async update(id: string, updates: Partial<Omit<Todo, 'id' | 'trade_id' | 'user_id' | 'created_at' | 'updated_at'>>) {
+  async update(
+    id: string,
+    updates: Partial<Omit<Todo, 'id' | 'trade_id' | 'user_id' | 'created_at' | 'updated_at'>>
+  ) {
     const { data, error } = await supabase
       .from('todos')
       .update(updates)
@@ -83,34 +87,25 @@ export const todoService = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
-      .from('todos')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('todos').delete().eq('id', id);
 
     if (error) throw error;
   },
 
   async deleteByTradeId(tradeId: string) {
-    const { error } = await supabase
-      .from('todos')
-      .delete()
-      .eq('trade_id', tradeId);
+    const { error } = await supabase.from('todos').delete().eq('trade_id', tradeId);
 
     if (error) throw error;
   },
 
   async reorder(tradeId: string, todos: Array<{ id: string; display_order: number }>) {
-    const updates = todos.map(todo => 
-      supabase
-        .from('todos')
-        .update({ display_order: todo.display_order })
-        .eq('id', todo.id)
+    const updates = todos.map((todo) =>
+      supabase.from('todos').update({ display_order: todo.display_order }).eq('id', todo.id)
     );
 
     const results = await Promise.all(updates);
-    const errors = results.filter(result => result.error);
-    
+    const errors = results.filter((result) => result.error);
+
     if (errors.length > 0) {
       throw errors[0].error;
     }

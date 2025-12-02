@@ -7,18 +7,18 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-   ActivityIndicator,
-   Alert,
-   KeyboardAvoidingView,
-   Modal,
-   Platform,
-   Pressable,
-   SafeAreaView,
-   ScrollView,
-   Text,
-   TextInput,
-   TouchableOpacity,
-   View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import * as v from 'valibot';
 
@@ -171,18 +171,14 @@ export default function NewGoodsScreen() {
                 onPress={handleDatePickerOpen}
               >
                 <Text className={`text-base ${releaseDate ? 'text-gray-900' : 'text-gray-500'}`}>
-                  {releaseDate 
-                    ? releaseDate.toLocaleDateString('ja-JP') 
-                    : '発売日を選択してください（任意）'
-                  }
+                  {releaseDate
+                    ? releaseDate.toLocaleDateString('ja-JP')
+                    : '発売日を選択してください（任意）'}
                 </Text>
                 <Ionicons name='calendar-outline' size={20} color='#9CA3AF' />
               </TouchableOpacity>
               {releaseDate && (
-                <TouchableOpacity
-                  className='mt-2'
-                  onPress={() => setReleaseDate(null)}
-                >
+                <TouchableOpacity className='mt-2' onPress={() => setReleaseDate(null)}>
                   <Text className='text-sm text-red-500'>発売日をクリア</Text>
                 </TouchableOpacity>
               )}
@@ -209,38 +205,35 @@ export default function NewGoodsScreen() {
       <Modal
         visible={showDatePicker}
         transparent={true}
-        animationType="fade"
+        animationType='fade'
         onRequestClose={handleDateCancel}
       >
-        <Pressable 
-          className="flex-1 bg-black/50 justify-center items-center"
+        <Pressable
+          className='flex-1 bg-black/50 justify-center items-center'
           onPress={handleDateCancel}
         >
           <Pressable onPress={() => {}}>
-            <View className="bg-white rounded-xl p-4 mx-6 w-120">
-              <Text className="text-lg font-semibold text-gray-900 mb-4 text-center">
+            <View className='bg-white rounded-xl p-4 mx-6 w-120'>
+              <Text className='text-lg font-semibold text-gray-900 mb-4 text-center'>
                 発売日を選択
               </Text>
               <DateTimePicker
                 value={tempDate}
-                mode="date"
-                display="spinner"
+                mode='date'
+                display='spinner'
                 onChange={handleDateChange}
                 maximumDate={new Date()}
                 style={{ alignSelf: 'center' }}
               />
-              <View className="flex-row justify-end mt-4 space-x-3">
-                <TouchableOpacity
-                  className="px-4 py-2 rounded-lg"
-                  onPress={handleDateCancel}
-                >
-                  <Text className="text-gray-600 font-medium">キャンセル</Text>
+              <View className='flex-row justify-end mt-4 space-x-3'>
+                <TouchableOpacity className='px-4 py-2 rounded-lg' onPress={handleDateCancel}>
+                  <Text className='text-gray-600 font-medium'>キャンセル</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className="px-4 py-2 bg-blue-500 rounded-lg"
+                  className='px-4 py-2 bg-blue-500 rounded-lg'
                   onPress={handleDateConfirm}
                 >
-                  <Text className="text-white font-medium">決定</Text>
+                  <Text className='text-white font-medium'>決定</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -1,10 +1,10 @@
 import { supabase } from '@/lib/supabase';
 import type {
-   CreateCategoryInput,
-   GoodsCategory,
-   GoodsStatistics,
-   TradeStatus,
-   UpdateCategoryInput,
+  CreateCategoryInput,
+  GoodsCategory,
+  GoodsStatistics,
+  TradeStatus,
+  UpdateCategoryInput,
 } from '@/types';
 import { PresetColor, PresetIcon } from '@/types';
 
