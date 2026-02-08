@@ -1,16 +1,16 @@
 /**
- * 
+ *
  * SecureStore (src/lib/supabase.ts):
  * - 認証トークン、セッション情報
  * - APIキー、機密データ
  * - 暗号化されて保存、容量制限: 2048バイト
- * 
+ *
  * AsyncStorage (このファイル):
  * - APIレスポンスキャッシュ
  * - ユーザー設定、アプリ設定
  * - 大きなデータ、非機密データ
  * - 平文で保存、容量制限なし
- * 
+ *
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

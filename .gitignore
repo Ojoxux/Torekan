@@ -43,3 +43,10 @@ app-example
 .serena/
 
 # requirements/
+/requirements
+
+# docs
+/docs
+
+# Supabase Temp files
+/supabase/.temp/

@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import type {
-   CreateTradeInput,
-   Trade,
-   TradeStatus,
-   TradeType,
-   TradeWithGoods,
-   UpdateTradeInput,
+  CreateTradeInput,
+  Trade,
+  TradeStatus,
+  TradeType,
+  TradeWithGoods,
+  UpdateTradeInput,
 } from '@/types';
 
 export const tradeService = {

@@ -45,12 +45,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add triggers for updated_at
+-- Add triggers for updated_at (drop first if exists to avoid errors)
+DROP TRIGGER IF EXISTS update_trades_updated_at ON trades;
 CREATE TRIGGER update_trades_updated_at BEFORE UPDATE ON trades
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_todos_updated_at ON todos;
 CREATE TRIGGER update_todos_updated_at BEFORE UPDATE ON todos
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
